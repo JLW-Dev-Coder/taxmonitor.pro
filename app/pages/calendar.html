@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tax Monitor Pro — Support Calendar</title>
+    <title>Tax Monitor Pro — Account Calendar</title>
 
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script src="/_sdk/element_sdk.js"></script>
@@ -152,7 +152,7 @@
             <div class="mb-8">
               <div class="flex flex-col items-center text-center">
                 <h1 class="text-3xl md:text-4xl font-semibold tracking-tight mb-2">
-                  <span class="gradient-text">Support Calendar</span>
+                  <span class="text-white">Account </span><span class="gradient-text">Calendar</span>
                 </h1>
                 <p class="text-slate-400 text-base md:text-lg max-w-2xl">
                   Manage your appointments and view upcoming events. Book onboarding sessions or schedule exit consultations.
@@ -241,14 +241,7 @@
                         <p class="text-xs text-slate-500">Auto-sync every 6 hours</p>
                         <p id="last-sync-label" class="text-xs text-slate-400">Last synced: —</p>
 
-                        <!-- Google Calendar Controls -->
-                        <button id="connect-google-btn" class="btn-primary px-3 py-1.5 rounded-lg text-xs text-white font-medium" type="button">
-                          Connect Google Calendar
-                        </button>
-
-                        <button id="sync-now-btn" class="btn-secondary px-3 py-1.5 rounded-lg text-xs text-slate-300 hidden" type="button">
-                          Sync Now
-                        </button>
+                        
                       </div>
                     </div>
 
@@ -311,8 +304,16 @@
                       </div>
                     </div>
 
-                    <button class="w-full mt-4 btn-secondary py-2 rounded-xl text-sm text-slate-300 hover:text-white" type="button">
+                    <button id="view-all-events-btn" class="w-full mt-4 btn-secondary py-2 rounded-xl text-sm text-slate-300 hover:text-white" type="button">
                       View All Events
+                    </button>
+
+                    <button id="connect-google-btn" class="w-full mt-3 btn-primary py-2 rounded-xl text-sm text-white font-medium" type="button">
+                      Connect Google Calendar
+                    </button>
+
+                    <button id="sync-now-btn" class="w-full mt-3 btn-secondary py-2 rounded-xl text-sm text-slate-300 hidden" type="button">
+                      Sync Now
                     </button>
                   </div>
                 </div>
@@ -504,50 +505,58 @@
     <!-- Cal inline embed code ends -->
 
     <script>
-      const eventsByDate = {
-        '2025-01-06': [
-          {
-            title: 'Onboarding Session',
-            time: '10:00 AM',
-            duration: '60',
-            description: 'Your scheduled onboarding session to get started with Tax Monitor Pro',
-            icon: 'emerald',
-            links: {
-              cancelUrl: 'https://app.cal.com/booking/placeholder/cancel',
-              meetingUrl: 'https://meet.google.com/placeholder',
-              rescheduleUrl: 'https://app.cal.com/booking/placeholder/reschedule'
+      // Demo data (shifts into the current month so highlights + navigation are obvious during UI work)
+      const eventsByDate = (function buildDemoEvents() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const k = (day) => `${y}-${m}-${String(day).padStart(2, '0')}`;
+
+        return {
+          [k(6)]: [
+            {
+              title: 'Onboarding Session',
+              time: '10:00 AM',
+              duration: '60',
+              description: 'Your scheduled onboarding session to get started with Tax Monitor Pro',
+              icon: 'emerald',
+              links: {
+                cancelUrl: 'https://app.cal.com/booking/placeholder/cancel',
+                meetingUrl: 'https://meet.google.com/placeholder',
+                rescheduleUrl: 'https://app.cal.com/booking/placeholder/reschedule'
+              }
             }
-          }
-        ],
-        '2025-01-10': [
-          {
-            title: 'Tax Review Call',
-            time: '2:00 PM',
-            duration: '45',
-            description: 'Quarterly tax review and planning discussion',
-            icon: 'amber',
-            links: {
-              cancelUrl: 'https://app.cal.com/booking/placeholder/cancel',
-              meetingUrl: '',
-              rescheduleUrl: 'https://app.cal.com/booking/placeholder/reschedule'
+          ],
+          [k(10)]: [
+            {
+              title: 'Tax Review Call',
+              time: '2:00 PM',
+              duration: '45',
+              description: 'Quarterly tax review and planning discussion',
+              icon: 'amber',
+              links: {
+                cancelUrl: 'https://app.cal.com/booking/placeholder/cancel',
+                meetingUrl: '',
+                rescheduleUrl: 'https://app.cal.com/booking/placeholder/reschedule'
+              }
             }
-          }
-        ],
-        '2025-01-20': [
-          {
-            title: 'Quarterly Check-in',
-            time: '11:00 AM',
-            duration: '30',
-            description: 'Review progress and discuss upcoming quarter',
-            icon: 'slate',
-            links: {
-              cancelUrl: '',
-              meetingUrl: '',
-              rescheduleUrl: ''
+          ],
+          [k(20)]: [
+            {
+              title: 'Quarterly Check-in',
+              time: '11:00 AM',
+              duration: '30',
+              description: 'Review progress and discuss upcoming quarter',
+              icon: 'slate',
+              links: {
+                cancelUrl: '',
+                meetingUrl: '',
+                rescheduleUrl: ''
+              }
             }
-          }
-        ]
-      };
+          ]
+        };
+      })();
 
       function setLinkState(anchorEl, url) {
         if (!anchorEl) return;
@@ -580,7 +589,8 @@
         return `${m} ${dateObj.getDate()}, ${dateObj.getFullYear()}`;
       }
 
-      let currentView = new Date(2025, 0, 1);
+      // Default to the current month so "Today" highlights correctly
+      let currentView = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
       function showEventDetails(title, dateLabel, time, duration, description, links) {
         const modal = document.getElementById('event-modal');
@@ -685,7 +695,15 @@
           }
 
           if (isThisMonth && dayNum === today.getDate()) {
+            // Today should visually override scheduled-event styling
+            btn.classList.remove('has-event');
             btn.classList.add('today', 'text-amber-300', 'font-semibold');
+
+            // Replace green dot with amber dot if event exists
+            const existingDot = btn.querySelector('span');
+            if (existingDot) {
+              existingDot.className = 'absolute bottom-1 w-1.5 h-1.5 bg-amber-400 rounded-full';
+            }
           }
 
           btn.addEventListener('click', () => showDateEvents(dateObj));
@@ -740,6 +758,104 @@
         panel.classList.remove('hidden');
       }
 
+      function timeToMinutes(timeStr) {
+        // Accepts formats like "10:00 AM". Returns minutes since midnight.
+        const s = String(timeStr || '').trim();
+        if (!s) return 0;
+        const m = s.match(/^([0-9]{1,2}):([0-9]{2}) *([AP]M)$/i);
+        if (!m) return 0;
+        let hh = parseInt(m[1], 10);
+        const mm = parseInt(m[2], 10);
+        const ap = String(m[3] || '').toUpperCase();
+        if (ap === 'PM' && hh !== 12) hh += 12;
+        if (ap === 'AM' && hh === 12) hh = 0;
+        return hh * 60 + mm;
+      }
+
+      function listAllEvents() {
+        const items = [];
+        Object.keys(eventsByDate || {}).forEach((dateKey) => {
+          const arr = Array.isArray(eventsByDate[dateKey]) ? eventsByDate[dateKey] : [];
+          arr.forEach((ev) => {
+            items.push({
+              dateKey,
+              title: ev.title || 'Event',
+              time: ev.time || '',
+              duration: ev.duration || '',
+              description: ev.description || '',
+              icon: ev.icon || 'slate',
+              links: ev.links || {}
+            });
+          });
+        });
+
+        items.sort((a, b) => {
+          if (a.dateKey !== b.dateKey) return a.dateKey < b.dateKey ? -1 : 1;
+          const at = timeToMinutes(a.time);
+          const bt = timeToMinutes(b.time);
+          if (at !== bt) return at - bt;
+          return String(a.title).localeCompare(String(b.title));
+        });
+
+        return items;
+      }
+
+      function showAllEvents() {
+        const panel = document.getElementById('date-events-panel');
+        const dateTitle = document.getElementById('date-panel-title');
+        const eventsList = document.getElementById('date-events-list');
+        if (!panel || !dateTitle || !eventsList) return;
+
+        dateTitle.textContent = 'All Upcoming Events';
+        eventsList.innerHTML = '';
+
+        const all = listAllEvents();
+        if (all.length === 0) {
+          eventsList.innerHTML = '<div class="text-center py-8"><p class="text-slate-400">No upcoming events</p></div>';
+          panel.classList.remove('hidden');
+          return;
+        }
+
+        all.forEach((ev) => {
+          const dateObj = new Date(ev.dateKey + 'T00:00:00');
+          const dateLabel = formatDateLabel(dateObj);
+
+          const card = document.createElement('div');
+          card.className = 'activity-item p-4 rounded-xl border border-white/10 cursor-pointer bg-slate-950/20';
+          card.onclick = () => {
+            closeEventModal();
+            showEventDetails(ev.title, dateLabel, ev.time, ev.duration, ev.description, ev.links);
+          };
+
+          let iconClass = 'bg-emerald-400/15 text-emerald-300';
+          let iconSvg = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+
+          if (ev.icon === 'amber') {
+            iconClass = 'bg-amber-400/15 text-amber-300';
+            iconSvg = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>';
+          }
+
+          if (ev.icon === 'slate') {
+            iconClass = 'bg-slate-400/10 text-slate-300';
+            iconSvg = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+          }
+
+          card.innerHTML =
+            '<div class="flex items-start gap-3">' +
+              '<div class="w-10 h-10 rounded-xl ' + iconClass + ' flex items-center justify-center flex-shrink-0">' + iconSvg + '</div>' +
+              '<div class="flex-1 min-w-0">' +
+                '<p class="text-sm font-medium text-white">' + ev.title + '</p>' +
+                '<p class="text-xs text-slate-400 mt-0.5">' + dateLabel + ' • ' + ev.time + '</p>' +
+                '<p class="text-xs text-slate-500 mt-1">' + ev.duration + ' minutes</p>' +
+              '</div>' +
+            '</div>';
+
+          eventsList.appendChild(card);
+        });
+
+        panel.classList.remove('hidden');
+      }
+
       function closeDateEventsPanel() {
         const p = document.getElementById('date-events-panel');
         if (p) p.classList.add('hidden');
@@ -773,6 +889,7 @@
         try {
           console.assert(typeof switchTab === 'function', 'switchTab should be defined');
           console.assert(typeof renderCalendar === 'function', 'renderCalendar should be defined');
+          console.assert(!!document.getElementById('view-all-events-btn'), '#view-all-events-btn should exist');
 
           const label = document.getElementById('calendar-month-label');
           const grid = document.getElementById('calendar-grid');
@@ -801,8 +918,11 @@
       document.addEventListener('DOMContentLoaded', () => {
         const prev = document.getElementById('calendar-prev');
         const next = document.getElementById('calendar-next');
+        const viewAll = document.getElementById('view-all-events-btn');
+
         if (prev) prev.addEventListener('click', () => changeMonth(-1));
         if (next) next.addEventListener('click', () => changeMonth(1));
+        if (viewAll) viewAll.addEventListener('click', showAllEvents);
 
         renderCalendar();
         runSmokeTests();
@@ -810,7 +930,7 @@
 
       // Optional Element SDK wiring (kept minimal)
       const defaultConfig = {
-        page_title: 'Support Calendar'
+        page_title: 'Account Calendar'
       };
 
       async function onConfigChange(config) {
