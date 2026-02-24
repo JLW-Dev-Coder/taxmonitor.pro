@@ -2,77 +2,82 @@
 <!doctype html>
 <html lang="en" class="h-full">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tax Monitor Pro — Agreement</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tax Monitor Pro - Agreement</title>
 
-  <!-- Match offer.html Tailwind pin -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/_sdk/element_sdk.js"></script>
+
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" href="/assets/favicon.ico" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-  <link rel="apple-touch-icon" href="/assets/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg" />
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
 
   <style>
-    body { box-sizing: border-box; }
     * { font-family: 'DM Sans', sans-serif; }
+    html, body { height: 100%; }
+    body { background-color: #0f172a; }
 
-    /* Noise texture overlay (match offer.html) */
-    .noise-bg::before{
-      content:'';
-      position:fixed; inset:0;
-      opacity:.03;
-      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-      pointer-events:none;
-      z-index:1;
+    .glass-input {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(100, 116, 139, 0.3);
+      color: #e2e8f0;
+      transition: all 0.3s ease;
     }
 
-    /* Aurora blobs (match offer.html) */
-    .aurora-blob{ position:absolute; border-radius:50%; filter:blur(100px); opacity:.14; animation:float 20s ease-in-out infinite; }
-    .aurora-1{ width:650px; height:420px; background:linear-gradient(135deg,#F59E0B,#D97706); top:8%; right:-12%; }
-    .aurora-2{ width:520px; height:360px; background:linear-gradient(135deg,#2DD4BF,#14B8A6); top:42%; left:-16%; opacity:.08; animation-delay:-7s; }
-    .aurora-3{ width:480px; height:320px; background:linear-gradient(135deg,#F59E0B,#EA580C); bottom:4%; right:18%; animation-delay:-14s; }
-    @keyframes float{ 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(30px,-30px) scale(1.05)} 66%{transform:translate(-20px,20px) scale(.95)} }
+    .glass-input:focus {
+      background: rgba(30, 41, 59, 0.9);
+      border-color: rgba(245, 158, 11, 0.6);
+      outline: none;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+    }
 
-    /* Glass (match offer.html) */
-    .glass-card{ background:rgba(15,23,42,.62); backdrop-filter:blur(20px); border:1px solid rgba(148,163,184,.12); border-radius:16px; }
-    .glass-card-light{ background:rgba(30,41,59,.50); backdrop-filter:blur(16px); border:1px solid rgba(148,163,184,.16); border-radius:12px; }
+    .glass-input::placeholder { color: rgba(148, 163, 176, 0.6); }
 
-    /* Glow (match offer.html) */
-    .glow-amber{ box-shadow:0 0 40px rgba(245,158,11,.26), 0 0 80px rgba(245,158,11,.10); }
-    .glow-amber-soft{ box-shadow:0 0 30px rgba(245,158,11,.18); }
-    .progress-glow{ background:linear-gradient(90deg,#F59E0B,#D97706); box-shadow:0 0 20px rgba(245,158,11,.5); }
-    .glow-divider{ height:1px; background:linear-gradient(90deg,transparent,rgba(245,158,11,.5),transparent); }
+    .button-primary {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: #0f172a;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
 
-    @keyframes pulse-glow{ 0%,100%{box-shadow:0 0 20px rgba(245,158,11,.30)} 50%{box-shadow:0 0 40px rgba(245,158,11,.50)} }
-    .animate-pulse-glow{ animation:pulse-glow 2s ease-in-out infinite; }
+    .button-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+    }
 
-    /* Scrollbar (match offer.html) */
-    ::-webkit-scrollbar{ width:8px; }
-    ::-webkit-scrollbar-track{ background:#0B1220; }
-    ::-webkit-scrollbar-thumb{ background:#1E293B; border-radius:4px; }
-    ::-webkit-scrollbar-thumb:hover{ background:#334155; }
+    .button-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
 
-    /* Agreement readability tweaks */
-    .agreement-prose h1,
-    .agreement-prose h2,
-    .agreement-prose h3 { scroll-margin-top: 110px; }
+    .button-secondary {
+      background: rgba(51, 65, 85, 0.5);
+      color: #e2e8f0;
+      border: 1px solid rgba(100, 116, 139, 0.3);
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .button-secondary:hover {
+      background: rgba(71, 85, 105, 0.6);
+      border-color: rgba(245, 158, 11, 0.5);
+    }
+
+    /* Agreement readability */
+    .agreement-prose { font-size: 18px; line-height: 1.8; }
+    .agreement-prose h1, .agreement-prose h2, .agreement-prose h3 { scroll-margin-top: 110px; }
     .agreement-prose a { text-decoration: underline; }
 
-    /* Readability: spacing + hierarchy (single source of truth) */
-    .agreement-prose{
-      font-size: 19.6px; /* +10% from 17.8px */
-      line-height: 1.8;
-    }
-
-    .agreement-prose :where(h3):not(:where([class~="not-prose"] *)){
+    .agreement-prose :where(h3):not(:where([class~="not-prose"] *)) {
       font-size: 1.12em;
       font-weight: 700;
       letter-spacing: 0.01em;
@@ -80,46 +85,40 @@
       margin-bottom: 1rem;
     }
 
-    .agreement-prose :where(p):not(:where([class~="not-prose"] *)){
+    .agreement-prose :where(p):not(:where([class~="not-prose"] *)) {
       margin-top: 1.25rem;
       margin-bottom: 1.25rem;
     }
 
-    .agreement-prose :where(ol, ul):not(:where([class~="not-prose"] *)){
+    .agreement-prose :where(ol, ul):not(:where([class~="not-prose"] *)) {
       margin-top: 1rem;
       margin-bottom: 1.25rem;
       padding-left: 1.25em;
     }
 
-    .agreement-prose :where(li):not(:where([class~="not-prose"] *)){
+    .agreement-prose :where(li):not(:where([class~="not-prose"] *)) {
       margin-top: 0.75rem;
       margin-bottom: 0.75rem;
     }
 
-    .agreement-prose :where(hr):not(:where([class~="not-prose"] *)){
+    .agreement-prose :where(hr):not(:where([class~="not-prose"] *)) {
       margin-top: 2rem;
       margin-bottom: 2rem;
     }
 
-    .agreement-prose :where(strong):not(:where([class~="not-prose"] *)){
-      font-weight: 700;
-    }
+    .agreement-prose :where(strong):not(:where([class~="not-prose"] *)) { font-weight: 700; }
   </style>
-
-  <style>@view-transition { navigation: auto; }</style>
+  <style>body { box-sizing: border-box; }</style>
 </head>
 
-<body class="h-full bg-[#020617] text-slate-200 noise-bg overflow-auto">
-  <!-- Aurora (match offer.html) -->
-  <div class="aurora-blob aurora-1"></div>
-  <div class="aurora-blob aurora-2"></div>
-  <div class="aurora-blob aurora-3"></div>
+<body class="h-full bg-slate-950 text-slate-100">
+  <div class="relative z-10 min-h-screen w-full flex flex-col">
 
-  <div class="min-h-full flex flex-col relative z-10 w-full">
-    <!-- Header (match intake.html header) -->
-    <header class="sticky top-0 z-50 glass-card border-b border-slate-800/60">
+    <!-- Sticky Header with Stepper (match intake.html) -->
+    <header class="sticky top-0 z-50 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
           <!-- Brand -->
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
@@ -173,12 +172,9 @@
           </div>
 
           <!-- Back -->
-          <a
-            href="/app/index.html"
-            class="inline-flex items-center gap-2 rounded-full border border-slate-800/70 bg-black/20 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-amber-300 hover:border-amber-500/30"
-          >
+          <a href="/app/index.html" class="inline-flex items-center gap-2 rounded-full border border-slate-800/70 bg-black/20 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-amber-300 hover:border-amber-500/30">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
             Back
           </a>
@@ -191,19 +187,28 @@
       </div>
     </header>
 
-    <!-- Spacing updated to match payment.html (sm:px-6 + sm:py-12 + inner max-w-5 wrapper) -->
-    <main class="flex-1 overflow-auto">
-      <div class="max-w-3xl mx-auto p-4 md:p-8 space-y-6 pb-12">
-        <div class="glass-card rounded-3xl p-8 md:p-10 relative border border-white/10 bg-white/5 backdrop-blur-xl">
-          <div class="mb-8 text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-white mb-3">Service Agreement</h1>
-            <p class="text-base text-slate-400">Please review and accept the terms below</p>
+    <!-- Main Content (match intake.html spacing) -->
+    <main class="flex-1 flex flex-col px-4 sm:px-6 py-8 sm:py-12">
+      <div class="w-full max-w-2xl mx-auto">
+
+        <!-- Hero Header (match intake.html structure) -->
+        <div class="text-center mb-12">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 mb-6">
+            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-amber-400 font-medium text-sm">Agreement Review</span>
           </div>
+          <h1 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">Service Agreement</h1>
+          <p class="text-slate-400 text-lg max-w-2xl mx-auto mb-6">Please review and accept the terms below.</p>
+          <div class="h-px w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+          <div class="mt-6 text-sm text-slate-500">Acceptance is required to proceed to payment.</div>
+        </div>
 
-          <div class="h-1 bg-gradient-to-r from-transparent via-amber-500/30 to-transparent rounded-full my-8"></div>
+        <!-- Agreement Card -->
+        <div class="p-6 sm:p-8">
 
-          <div class="agreement-prose space-y-6">
-
+          <div class="agreement-prose text-slate-200">
             <p style="text-align:center; margin-bottom:16px;">
               <span class="inline-flex items-center justify-center">
                 <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
@@ -217,11 +222,11 @@
             </h1>
 
             <p style="text-align:center; margin-bottom:28px;">
-              Tax Monitor Service<br>
+              Tax Monitor Service<br />
               Provided by <strong>Tax Monitor Pro</strong>
             </p>
 
-            <hr>
+            <hr />
 
             <p>
               This Service Agreement (“Agreement”) governs the Tax Monitor Service provided by
@@ -235,7 +240,7 @@
               intervention unless expressly agreed to in a separate written contract.
             </p>
 
-            <hr>
+            <hr />
 
             <h3>Client Responsibilities</h3>
             <ol>
@@ -246,35 +251,35 @@
               <li>Cancellation is available within forty-eight (48) hours of payment by contacting <a class="text-amber-400 underline" href="mailto:support@taxmonitor.pro">support@taxmonitor.pro</a>. Cancellation stops future billing. <strong>All service fees are non-refundable once services begin, including any work performed, records accessed, or insights delivered.</strong></li>
             </ol>
 
-            <hr>
+            <hr />
 
             <h3>Married Filing Jointly (MFJ) Years</h3>
-              <p>
+            <p>
               For tax years filed as <strong>Married Filing Jointly (MFJ)</strong>, each spouse must independently enroll in Tax Monitor Pro and complete all required authorization forms.
               Enrollment by one spouse does not grant access to the other spouse’s IRS records.
-              </p>
+            </p>
 
-              <p>
+            <p>
               Each spouse maintains a separate account and separate monitoring order.
               Neither spouse receives access to the other spouse’s dashboard, records, reports, or account information.
-              </p>
+            </p>
 
-              <p>
+            <p>
               Upon completion of authorization by both spouses, the Company may internally associate the separate authorizations solely for compliance review and transcript interpretation purposes.
               This internal association does not merge accounts and does not create shared user access.
-              </p>
+            </p>
 
-              <p>
+            <p>
               If one spouse fails to enroll, fails to complete authorization, or fails to maintain an active monitoring term,
               MFJ years will remain unavailable for compliance reporting.
               Non-completion by a spouse does not entitle either party to refunds, credits, extensions, partial service adjustments, or modified terms.
-              </p>
+            </p>
 
-              <p>
+            <p>
               The Client acknowledges that jointly filed years require cooperation of both taxpayers and that the Company is not responsible for delays, refusal, non-response, or inaction by a spouse.
-              </p>
-              
-            <hr>
+            </p>
+
+            <hr />
 
             <h3>Company Responsibilities</h3>
             <ol start="6">
@@ -284,44 +289,52 @@
               <li>Electronic data transmission and storage may involve secure third-party systems necessary to deliver services efficiently.</li>
             </ol>
 
-            <hr>
+            <hr />
 
             <h3>Scope Limitation</h3>
             <p>This Agreement does not include IRS representation, negotiations, payment arrangements, offers in compromise, appeals, or enforcement resolution unless authorized in writing through a separate Representation Agreement and Power of Attorney.</p>
 
-            <hr>
+            <hr />
 
             <h3>Acceptance</h3>
             <p>By signing electronically, the Client acknowledges that this Agreement is legally binding and enforceable to the same extent as a handwritten signature.</p>
           </div>
 
-          <div class="h-1 bg-gradient-to-r from-transparent via-amber-500/30 to-transparent rounded-full my-8"></div>
+          <div class="h-px w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent my-8"></div>
 
+          <!-- Agreement Accept Form (contract-accurate POST) -->
           <form id="tm-agreement" method="post" action="https://api.taxmonitor.pro/forms/agreement" accept-charset="UTF-8" class="space-y-4">
-            <input id="tm_event_id" name="eventId" type="hidden" value="">
-            <input id="tm_session_token" name="sessionToken" type="hidden" value="">
-            <input id="sign_code" name="code" type="hidden" value="">
-            <input id="sign_item" name="item" type="hidden" value="">
-            <input id="sign_ack" name="agreement_acknowledged" type="hidden" value="No">
+            <input id="tm_event_id" name="eventId" type="hidden" value="" />
+            <input id="tm_session_token" name="sessionToken" type="hidden" value="" />
+            <input id="sign_code" name="code" type="hidden" value="" />
+            <input id="sign_item" name="item" type="hidden" value="" />
+            <input id="sign_ack" name="agreement_acknowledged" type="hidden" value="No" />
 
-            <label class="flex items-start gap-3 p-4 bg-white/5 rounded-xl border border-white/10">
-              <input id="agree_ack" type="checkbox" class="w-5 h-5 mt-1 accent-amber-500">
-              <span class="text-sm text-slate-200">I have read and accept this Service Agreement.</span>
+            <label class="flex items-start gap-3 p-4 bg-slate-800/30 rounded-lg cursor-pointer border border-slate-700/50">
+              <input id="agree_ack" type="checkbox" class="mt-1 h-5 w-5 accent-amber-500" />
+              <span class="text-sm text-slate-100">I have read and accept this Service Agreement.</span>
             </label>
 
-            <div class="flex items-center gap-4 pt-4">
-              <a id="btn-back-offer" href="/app/offer.html" class="flex-1 px-6 py-3 rounded-xl font-semibold text-center text-slate-300 bg-white/5 hover:bg-white/10 transition-colors">Back to Offer</a>
-              <button id="btn-continue" type="submit" class="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold py-3 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>Accept & Continue</button>
+            <div class="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
+              <p class="text-amber-200 text-sm">By continuing, you agree to the <a class="text-amber-300 hover:text-amber-200" href="/legal/terms.html">Terms</a> and <a class="text-amber-300 hover:text-amber-200" href="/legal/privacy.html">Privacy Policy</a>. Monitoring does not create IRS representation.</p>
+            </div>
+
+            <div id="tm-error" class="hidden rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200"></div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6 border-t border-slate-700/30">
+              <a id="btn-back" href="/app/index.html" class="button-secondary w-full py-3 px-4 text-center">Back</a>
+              <button id="btn-continue" type="submit" class="button-primary w-full py-3 px-4" data-tm-submit disabled>Accept &amp; Continue</button>
             </div>
           </form>
-
-          <div id="tm-error" class="hidden mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"></div>
         </div>
       </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="glass-card mx-4 mb-4 px-6 py-4">
+    <div class="text-center text-sm text-slate-600 pt-6 mt-12 mb-16 px-6">
+      Monitoring does not create IRS representation. Representation, filing, and resolution are separate engagements.
+    </div>
+
+    <footer class="px-6 py-4 mt-8">
       <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <p class="text-slate-500 text-sm">© <span id="footer-year"></span> Tax Monitor Pro. All rights reserved.</p>
         <div class="flex items-center gap-6">
@@ -331,6 +344,7 @@
         </div>
       </div>
     </footer>
+
   </div>
 
   <script>
@@ -340,157 +354,113 @@
     })();
   </script>
 
-<!-- Common helpers (same pattern as intake.html) -->
   <script>
     (function () {
-      function getEndpointSlug(formEl) {
-        try {
-          var action = String(formEl.getAttribute('action') || '');
-          var u = new URL(action, window.location.origin);
-          var parts = (u.pathname || '').split('/').filter(Boolean);
-          return String(parts[parts.length - 1] || 'form').trim() || 'form';
-        } catch (e) {
-          return 'form';
+      window.tmCommon = window.tmCommon || {
+        disableSubmit: function (form) {
+          var btn = form.querySelector('[data-tm-submit]');
+          if (!btn) return;
+          btn.disabled = true;
+          btn.dataset.tmLabel = btn.textContent;
+          btn.textContent = 'Submitting…';
+          btn.classList.add('opacity-80', 'cursor-not-allowed');
+        },
+        ensureEventId: function () {
+          var el = document.getElementById('tm_event_id');
+          if (!el) return;
+          if (el.value) return;
+          var id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2));
+          el.value = id;
+        },
+        restoreSubmit: function (form) {
+          var btn = form.querySelector('[data-tm-submit]');
+          if (!btn) return;
+          btn.disabled = false;
+          if (btn.dataset.tmLabel) btn.textContent = btn.dataset.tmLabel;
+          btn.classList.remove('opacity-80', 'cursor-not-allowed');
+        },
+        showError: function (msg) {
+          var el = document.getElementById('tm-error');
+          if (!el) return;
+          el.textContent = msg || 'Something went wrong.';
+          el.classList.remove('hidden');
+        },
+        syncSessionToken: function () {
+          var qs = new URLSearchParams(window.location.search || '');
+          var token = qs.get('sessionToken') || qs.get('token') || '';
+          var el = document.getElementById('tm_session_token');
+          if (el) el.value = token;
         }
-      }
-
-      function ensureEventId(formEl) {
-        var el = document.getElementById('tm_event_id');
-        if (!el) return;
-
-        var endpoint = getEndpointSlug(formEl || document.querySelector('form'));
-        var key = 'tm:' + endpoint + ':eventId';
-
-        var existing = sessionStorage.getItem(key);
-        if (!existing) {
-          existing = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
-          sessionStorage.setItem(key, existing);
-        }
-        el.value = existing;
-      }
-
-      function syncSessionToken() {
-        var el = document.getElementById('tm_session_token');
-        if (!el) return;
-
-        var params = new URLSearchParams(window.location.search || '');
-        var t = params.get('token') || params.get('sessionToken') || '';
-        el.value = t;
-      }
-
-      function disableSubmit(formEl) {
-        if (!formEl) return;
-
-        var btn = formEl.querySelector('button[type="submit"]');
-        if (!btn) return;
-
-        btn.disabled = true;
-        btn.setAttribute('aria-disabled', 'true');
-        btn.dataset.originalText = btn.textContent || '';
-        btn.textContent = 'Submitting...';
-      }
-
-      function showError(text) {
-        var box = document.getElementById('tm-error');
-        if (!box) return;
-        box.textContent = String(text || 'Submission failed.');
-        box.classList.remove('hidden');
-      }
-
-      function restoreSubmit(formEl) {
-        if (!formEl) return;
-
-        var btn = formEl.querySelector('button[type="submit"]');
-        if (!btn) return;
-
-        btn.disabled = false;
-        btn.removeAttribute('aria-disabled');
-        btn.textContent = btn.dataset.originalText || 'Submit';
-      }
-
-      window.tmCommon = {
-        disableSubmit: disableSubmit,
-        ensureEventId: ensureEventId,
-        getEndpointSlug: getEndpointSlug,
-        restoreSubmit: restoreSubmit,
-        showError: showError,
-        syncSessionToken: syncSessionToken
       };
     })();
   </script>
 
-  <!-- Agreement page wiring (URL params + ack gating + submit via fetch + redirect) -->
   <script>
     (function () {
       function safeText(s) {
-        return String(s || "").replace(/[<>]/g, "").replace(/\s+/g, " ").trim();
+        return String(s || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim();
       }
 
-      var params = new URLSearchParams(window.location.search || "");
-      var code = safeText(params.get("code"));
-      var item = safeText(params.get("item"));
+      var params = new URLSearchParams(window.location.search || '');
+      var code = safeText(params.get('code'));
+      var item = safeText(params.get('item'));
 
-      var back = document.getElementById("btn-back-offer");
-      if (back && (code || item)) {
-        var u = new URL("/app/offer.html", window.location.origin);
-        if (code) u.searchParams.set("code", code);
-        if (item) u.searchParams.set("item", item);
-        back.setAttribute("href", u.pathname + "?" + u.searchParams.toString());
-      }
-
-      var signCode = document.getElementById("sign_code");
-      var signItem = document.getElementById("sign_item");
+      var signCode = document.getElementById('sign_code');
+      var signItem = document.getElementById('sign_item');
       if (signCode) signCode.value = code;
       if (signItem) signItem.value = item;
 
-      var ack = document.getElementById("agree_ack");
-      var signAck = document.getElementById("sign_ack");
-      var btn = document.getElementById("btn-continue");
+      var ack = document.getElementById('agree_ack');
+      var signAck = document.getElementById('sign_ack');
+      var btn = document.getElementById('btn-continue');
 
       function syncAck() {
         var yes = !!(ack && ack.checked);
-        if (signAck) signAck.value = yes ? "Yes" : "No";
+        if (signAck) signAck.value = yes ? 'Yes' : 'No';
         if (btn) btn.disabled = !yes;
       }
 
-      if (ack) ack.addEventListener("change", syncAck);
+      if (ack) ack.addEventListener('change', syncAck);
       syncAck();
 
-      var form = document.getElementById("tm-agreement");
+      var form = document.getElementById('tm-agreement');
       if (form && window.tmCommon) {
-        window.tmCommon.ensureEventId(form);
+        window.tmCommon.ensureEventId();
         window.tmCommon.syncSessionToken();
       }
 
       if (form) {
-        form.addEventListener("submit", async function (e) {
+        form.addEventListener('submit', async function (e) {
           e.preventDefault();
 
           syncAck();
           if (btn && btn.disabled) return;
 
-          if (window.tmCommon) {
-            window.tmCommon.ensureEventId(form);
-            window.tmCommon.syncSessionToken();
-            window.tmCommon.disableSubmit(form);
+          if (!code || !item) {
+            window.tmCommon.showError('Missing required code/item in the URL.');
+            return;
           }
 
+          window.tmCommon.ensureEventId();
+          window.tmCommon.syncSessionToken();
+          window.tmCommon.disableSubmit(form);
+
           try {
-            var res = await fetch(form.action, { method: "POST", body: new FormData(form) });
+            var res = await fetch(form.action, { method: 'POST', body: new FormData(form) });
             var data = {};
             try { data = await res.json(); } catch (err) {}
 
             if (res.ok && data && data.ok) {
-              window.location.href = "/app/payment.html" + (window.location.search || "");
+              window.location.href = '/app/payment.html' + (window.location.search || '');
               return;
             }
 
-            var msg = (data && (data.error || data.details)) ? (data.error || data.details) : "Submission failed.";
-            if (window.tmCommon) window.tmCommon.showError(msg);
-            if (window.tmCommon) window.tmCommon.restoreSubmit(form);
+            var msg = (data && (data.error || data.details)) ? (data.error || data.details) : 'Submission failed.';
+            window.tmCommon.showError(msg);
+            window.tmCommon.restoreSubmit(form);
           } catch (err) {
-            if (window.tmCommon) window.tmCommon.showError(String(err && err.message ? err.message : err));
-            if (window.tmCommon) window.tmCommon.restoreSubmit(form);
+            window.tmCommon.showError(String(err && err.message ? err.message : err));
+            window.tmCommon.restoreSubmit(form);
           }
         });
       }
