@@ -665,24 +665,74 @@ async function handleCreateTranscriptCheckout(request, env) {
   const priceId = typeof body?.priceId === "string" ? body.priceId.trim() : "";
   const tokenId = typeof body?.tokenId === "string" ? body.tokenId.trim() : "";
 
+  // New: return URL inputs from client
+  const returnUrlBaseRaw = typeof body?.returnUrlBase === "string" ? body.returnUrlBase.trim() : "";
+  const successPathRaw = typeof body?.successPath === "string" ? body.successPath.trim() : "";
+
   if (!priceId) return json({ error: "missing_priceId" }, 400, withCors(request));
   if (!tokenId) return json({ error: "missing_tokenId" }, 400, withCors(request));
 
-  const allowed = [env.PRICE_10, env.PRICE_25, env.PRICE_100];
-  if (!allowed.includes(priceId)) return json({ error: "invalid_priceId" }, 400, withCors(request));
+  const allowedPrices = [env.PRICE_10, env.PRICE_25, env.PRICE_100];
+  if (!allowedPrices.includes(priceId)) return json({ error: "invalid_priceId" }, 400, withCors(request));
 
-  const origin = new URL(request.url).origin;
+  // Strict allowlist validation
+  const allowedReturnOrigins = getAllowedReturnOrigins(env);
+  const returnOrigin = normalizeOrigin(returnUrlBaseRaw);
+
+  if (!returnOrigin) {
+    return json({ error: "missing_or_invalid_returnUrlBase" }, 400, withCors(request));
+  }
+
+  if (!allowedReturnOrigins.has(returnOrigin)) {
+    return json(
+      { error: "return_origin_not_allowed", returnOrigin, allowed: Array.from(allowedReturnOrigins).sort() },
+      400,
+      withCors(request)
+    );
+  }
+
+  // Strict path: default to /payment-confirmation, ignore weird input
+  const successPath = successPathRaw === "/payment-confirmation" ? "/payment-confirmation" : "/payment-confirmation";
 
   const session = await stripeFetch(env, "POST", "/checkout/sessions", {
     mode: "payment",
     "line_items[0][price]": priceId,
     "line_items[0][quantity]": "1",
-    success_url: `${origin}/payment-confirmation?session_id={CHECKOUT_SESSION_ID}&tokenId=${encodeURIComponent(tokenId)}`,
-    cancel_url: `${origin}/index.html#pricing`,
+
+    // ✅ Uses client site origin, not API origin
+    success_url: `${returnOrigin}${successPath}?session_id={CHECKOUT_SESSION_ID}&tokenId=${encodeURIComponent(tokenId)}`,
+    cancel_url: `${returnOrigin}/index.html#pricing`,
+
     "metadata[tokenId]": tokenId,
     "metadata[priceId]": priceId,
   });
 
+  return json({ id: session.id, url: session.url }, 200, withCors(request));
+}
+
+function getAllowedReturnOrigins(env) {
+  // Clean + strict:
+  // - Prefer explicit env allowlist
+  // - Fall back to transcript.taxmonitor.pro only
+  const fallback = ["https://transcript.taxmonitor.pro"];
+
+  const raw = String(env.TRANSCRIPT_RETURN_ORIGINS_JSON || "").trim();
+  if (!raw) return new Set(fallback);
+
+  try {
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return new Set(fallback);
+
+    const normalized = arr
+      .map(normalizeOrigin)
+      .filter(Boolean);
+
+    return new Set(normalized.length ? normalized : fallback);
+  } catch {
+    return new Set(fallback);
+  }
+}
+  
   return json({ id: session.id, url: session.url }, 200, withCors(request));
 }
 
@@ -1246,4 +1296,5 @@ async function handleStripeWebhook(request, env, ctx) {
   console.log("[stripe] webhook received", { type: parsed.value?.type, id: parsed.value?.id });
   return jsonResponse({ ok: true }, { status: 200 });
 }
+
 
