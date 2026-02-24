@@ -10,20 +10,44 @@ compatibility_date = "2025-02-09"
 enabled = true
 
 # ---------------------------------------
-# R2 Binding (authoritative store)
-# ---------------------------------------
-
-[[r2_buckets]]
-binding = "R2_BUCKET"
-bucket_name = "taxmonitor-pro"
-
-# ---------------------------------------
 # Routes (API lives on api.taxmonitor.pro)
 # ---------------------------------------
 
 routes = [
   { pattern = "api.taxmonitor.pro/*", zone_name = "taxmonitor.pro" }
 ]
+
+# ---------------------------------------
+# R2 Buckets
+# ---------------------------------------
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "taxmonitor-pro"
+
+[[r2_buckets]]
+binding = "R2_TRANSCRIPT"
+bucket_name = "transcript-taxmonitor-pro"
+
+# ---------------------------------------
+# KV (legacy token balances; keep until migration confirmed)
+# ---------------------------------------
+
+[[kv_namespaces]]
+binding = "TOKENS_KV"
+id = "TOKENS_KV"
+
+# ---------------------------------------
+# Durable Object (consistent token ledger)
+# ---------------------------------------
+
+[[durable_objects.bindings]]
+name = "TOKEN_LEDGER"
+class_name = "TokenLedger"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["TokenLedger"]
 
 # ---------------------------------------
 # Vars (non-secret)
@@ -45,6 +69,12 @@ MY_ORGANIZATION_NAME = "Tax Monitor Pro"
 MY_ORGANIZATION_STATE_PROVINCE = "CA"
 MY_ORGANIZATION_ZIP = "92020"
 
+# Transcript pricing/token vars
+CREDIT_MAP_JSON = "{\"price_1T4Ar2CMpIgwe61ZMzAI6yKa\":10,\"price_1T4AxzCMpIgwe61ZsWh7GGAb\":25,\"price_1T4B1gCMpIgwe61ZG12b5tjN\":100}"
+PRICE_10 = "price_1T4Ar2CMpIgwe61ZMzAI6yKa"
+PRICE_100 = "price_1T4B1gCMpIgwe61ZG12b5tjN"
+PRICE_25 = "price_1T4AxzCMpIgwe61ZsWh7GGAb"
+
 # ---------------------------------------
 # Secrets (set via wrangler secret put)
 # ---------------------------------------
@@ -54,37 +84,3 @@ MY_ORGANIZATION_ZIP = "92020"
 # GOOGLE_PRIVATE_KEY
 # STRIPE_SECRET_KEY
 # STRIPE_WEBHOOK_SECRET
-
-# ---------------------------------------
-# KV Binding (token balances)
-# ---------------------------------------
-
-[[kv_namespaces]]
-binding = "TOKENS_KV"
-id = "TOKENS_KV"
-
-# ---------------------------------------
-# Optional R2 bucket for Transcript receipts
-# ---------------------------------------
-
-[[r2_buckets]]
-binding = "TRANSCRIPT_R2"
-bucket_name = "transcript-taxmonitor-pro"
-
-# ---------------------------------------
-# Vars (non-secret)
-# ---------------------------------------
-
-[vars]
-CREDIT_MAP_JSON = "{\"price_1T4Ar2CMpIgwe61ZMzAI6yKa\":10,\"price_1T4AxzCMpIgwe61ZsWh7GGAb\":25,\"price_1T4B1gCMpIgwe61ZG12b5tjN\":100}"
-PRICE_10 = "price_1T4Ar2CMpIgwe61ZMzAI6yKa"
-PRICE_25 = "price_1T4AxzCMpIgwe61ZsWh7GGAb"
-PRICE_100 = "price_1T4B1gCMpIgwe61ZG12b5tjN"
-
-[[durable_objects.bindings]]
-name = "TOKEN_LEDGER"
-class_name = "TokenLedger"
-
-[[migrations]]
-tag = "v1"
-new_classes = ["TokenLedger"]
