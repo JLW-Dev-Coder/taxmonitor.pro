@@ -964,3 +964,79 @@ async function handleStripeWebhook(request, env, ctx) {
   console.log("[stripe] webhook received", { type: parsed.value?.type, id: parsed.value?.id });
   return jsonResponse({ ok: true }, { status: 200 });
 }
+
+/* ------------------------------------------
+ * TRANSCRIPT.TAX MONITOR.PRO WORKER INSTRUCTIONS
+ * ------------------------------------------ */
+
+export class TokenLedger {
+  constructor(state, env) {
+    this.state = state;
+    this.env = env;
+  }
+
+  async fetch(request) {
+    const url = new URL(request.url);
+
+    if (request.method === "GET" && url.pathname === "/balance") {
+      const balance = (await this.state.storage.get("balance")) ?? 0;
+      return json({ balance }, 200);
+    }
+
+    if (request.method === "POST" && url.pathname === "/credit") {
+      const body = await request.json().catch(() => ({}));
+      const amount = Number(body?.amount ?? 0);
+      const requestId = typeof body?.requestId === "string" ? body.requestId.trim() : "";
+
+      if (!Number.isFinite(amount) || amount <= 0) return json({ error: "invalid_amount" }, 400);
+      if (!requestId) return json({ error: "missing_requestId" }, 400);
+
+      // idempotency
+      const idemKey = `credit:${requestId}`;
+      const already = await this.state.storage.get(idemKey);
+      if (already) return json({ balance: already, idempotent: true }, 200);
+
+      const current = (await this.state.storage.get("balance")) ?? 0;
+      const next = Number(current) + amount;
+
+      await this.state.storage.put("balance", next);
+      await this.state.storage.put(idemKey, next);
+
+      return json({ balance: next }, 200);
+    }
+
+    if (request.method === "POST" && url.pathname === "/consume") {
+      const body = await request.json().catch(() => ({}));
+      const amount = Number(body?.amount ?? 1);
+      const requestId = typeof body?.requestId === "string" ? body.requestId.trim() : "";
+
+      if (!Number.isFinite(amount) || amount <= 0) return json({ error: "invalid_amount" }, 400);
+      if (!requestId) return json({ error: "missing_requestId" }, 400);
+
+      // idempotency
+      const idemKey = `consume:${requestId}`;
+      const already = await this.state.storage.get(idemKey);
+      if (already !== undefined) return json({ balance: already, idempotent: true }, 200);
+
+      const current = (await this.state.storage.get("balance")) ?? 0;
+      if (Number(current) < amount) {
+        return json({ balance: current, error: "insufficient_balance", needed: amount }, 402);
+      }
+
+      const next = Number(current) - amount;
+
+      await this.state.storage.put("balance", next);
+      await this.state.storage.put(idemKey, next);
+
+      return json({ balance: next }, 200);
+    }
+
+    return json({ error: "not_found" }, 404);
+  }
+}
+
+function getLedgerStub(env, tokenId) {
+  if (!env.TOKEN_LEDGER) throw new Error("Missing Durable Object binding: TOKEN_LEDGER");
+  const id = env.TOKEN_LEDGER.idFromName(tokenId);
+  return env.TOKEN_LEDGER.get(id);
+}
