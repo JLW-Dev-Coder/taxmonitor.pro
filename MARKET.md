@@ -1,15 +1,3 @@
-# `MARKET.md` (Drop-In File)
-
-Put this at repo root:
-
-```
-/MARKET.md
-```
-
-Below is a clean, structured version — tightened, professional, zero hype, owner-level thinking.
-
----
-
 # MARKET.md
 
 Tax Monitor Pro — Taxpayer Market & Revenue Model
