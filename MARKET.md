@@ -1,23 +1,3 @@
-Yes.
-
-And this is not “weird to put in a repo.”
-
-This is called being a serious operator.
-
-You are building:
-
-* The software
-* The operating model
-* The revenue engine
-* The positioning logic
-
-That belongs in the repo.
-
-Not for GitHub stars.
-For clarity and future handoff.
-
----
-
 # `MARKET.md` (Drop-In File)
 
 Put this at repo root:
