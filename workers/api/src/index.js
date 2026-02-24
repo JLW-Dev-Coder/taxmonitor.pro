@@ -26,7 +26,7 @@
  *
  * Transcript entitlements:
  * - Durable Object TOKEN_LEDGER is authoritative balance (consistent)
- * - TRANSCRIPT_R2 stores receipts/audit logs (optional)
+ * - R2_TRANSCRIPT stores receipts/audit logs (optional)
  */
 
 /* ------------------------------------------
@@ -716,10 +716,10 @@ async function handleConsumeTranscriptTokens(request, env, ctx) {
 
   const out = await res.json().catch(() => ({}));
 
-  if (env.TRANSCRIPT_R2) {
+  if (env.R2_TRANSCRIPT) {
     const key = `receipts/consume/${requestId}.json`;
     ctx.waitUntil(
-      env.TRANSCRIPT_R2.put(
+      env.R2_TRANSCRIPT.put(
         key,
         JSON.stringify({ amount, at: new Date().toISOString(), balance: out.balance, tokenId }, null, 2),
         { httpMetadata: { contentType: "application/json" } }
@@ -760,10 +760,10 @@ async function handleTranscriptStripeWebhook(request, env, ctx) {
           body: JSON.stringify({ amount: credits, requestId }),
         });
 
-        if (env.TRANSCRIPT_R2) {
+        if (env.R2_TRANSCRIPT) {
           const key = `receipts/stripe/${session.id}.json`;
           ctx.waitUntil(
-            env.TRANSCRIPT_R2.put(
+            env.R2_TRANSCRIPT.put(
               key,
               JSON.stringify(
                 { at: new Date().toISOString(), credits, priceId, sessionId: session.id, tokenId, type: event.type },
@@ -1246,3 +1246,4 @@ async function handleStripeWebhook(request, env, ctx) {
   console.log("[stripe] webhook received", { type: parsed.value?.type, id: parsed.value?.id });
   return jsonResponse({ ok: true }, { status: 200 });
 }
+
