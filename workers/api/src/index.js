@@ -96,6 +96,18 @@ function assertEnv(env, keys) {
   if (missing.length) throw new Error(`Missing env vars: ${missing.join(", ")}`);
 }
 
+function envMissing(env, keys) {
+  return keys.filter((k) => !env[k]);
+}
+
+function jsonError(request, status, error, details = null) {
+  const payload = { error };
+  if (details) payload.details = details;
+
+  const isTranscript = new URL(request.url).pathname.startsWith("/transcript/");
+  return json(payload, status, isTranscript ? withCors(request) : undefined);
+}
+
 /* ------------------------------------------
  * Transcript: Return origin allowlist (strict)
  * ------------------------------------------ */
@@ -655,33 +667,47 @@ function getLedgerStub(env, tokenId) {
  * ------------------------------------------ */
 
 async function handleGetTranscriptPrices(request, env) {
-  assertEnv(env, ["CREDIT_MAP_JSON", "PRICE_10", "PRICE_100", "PRICE_25", "STRIPE_SECRET_KEY"]);
+  const required = ["CREDIT_MAP_JSON", "PRICE_10", "PRICE_100", "PRICE_25", "STRIPE_SECRET_KEY"];
+  const missing = envMissing(env, required);
+  if (missing.length) return jsonError(request, 503, "pricing_temporarily_unavailable", { missing: missing.sort() });
 
-  const creditMap = JSON.parse(env.CREDIT_MAP_JSON);
-  const priceIds = [env.PRICE_10, env.PRICE_25, env.PRICE_100].sort();
-
-  const out = [];
-  for (const priceId of priceIds) {
-    const price = await stripeFetch(env, "GET", `/prices/${encodeURIComponent(priceId)}`);
-    const credits = creditMap[priceId] ?? null;
-
-    out.push({
-      amount: price.unit_amount,
-      credits,
-      currency: (price.currency || "usd").toUpperCase(),
-      label: "Transcript.Tax Monitor Pro",
-      perks: ["Client-ready report preview", "Credits applied instantly", "Local PDF parsing (no uploads)"].sort(),
-      priceId,
-      recommended: credits === 25,
-    });
+  let creditMap;
+  try {
+    creditMap = JSON.parse(env.CREDIT_MAP_JSON);
+  } catch (err) {
+    return jsonError(request, 500, "invalid_credit_map", String(err?.message || err));
   }
 
-  out.sort((a, b) => (a.credits || 0) - (b.credits || 0));
-  return json({ prices: out }, 200, withCors(request));
+  const priceIds = [env.PRICE_10, env.PRICE_25, env.PRICE_100].filter(Boolean).sort();
+
+  try {
+    const out = [];
+    for (const priceId of priceIds) {
+      const price = await stripeFetch(env, "GET", `/prices/${encodeURIComponent(priceId)}`);
+      const credits = creditMap[priceId] ?? null;
+
+      out.push({
+        amount: price.unit_amount,
+        credits,
+        currency: (price.currency || "usd").toUpperCase(),
+        label: "Transcript.Tax Monitor Pro",
+        perks: ["Client-ready report preview", "Credits applied instantly", "Local PDF parsing (no uploads)"].sort(),
+        priceId,
+        recommended: credits === 25,
+      });
+    }
+
+    out.sort((a, b) => (a.credits || 0) - (b.credits || 0));
+    return json({ prices: out }, 200, withCors(request));
+  } catch (err) {
+    return jsonError(request, 502, "pricing_temporarily_unavailable", String(err?.message || err));
+  }
 }
 
 async function handleCreateTranscriptCheckout(request, env) {
-  assertEnv(env, ["CREDIT_MAP_JSON", "PRICE_10", "PRICE_100", "PRICE_25", "STRIPE_SECRET_KEY"]);
+  const required = ["CREDIT_MAP_JSON", "PRICE_10", "PRICE_100", "PRICE_25", "STRIPE_SECRET_KEY"];
+  const missing = envMissing(env, required);
+  if (missing.length) return jsonError(request, 503, "checkout_temporarily_unavailable", { missing: missing.sort() });
 
   const body = await request.json().catch(() => ({}));
   const priceId = typeof body?.priceId === "string" ? body.priceId.trim() : "";
@@ -690,38 +716,38 @@ async function handleCreateTranscriptCheckout(request, env) {
   const returnUrlBaseRaw = typeof body?.returnUrlBase === "string" ? body.returnUrlBase.trim() : "";
   const successPathRaw = typeof body?.successPath === "string" ? body.successPath.trim() : "";
 
-  if (!priceId) return json({ error: "missing_priceId" }, 400, withCors(request));
-  if (!tokenId) return json({ error: "missing_tokenId" }, 400, withCors(request));
+  if (!priceId) return jsonError(request, 400, "missing_priceId");
+  if (!tokenId) return jsonError(request, 400, "missing_tokenId");
 
-  const allowedPrices = [env.PRICE_10, env.PRICE_25, env.PRICE_100];
-  if (!allowedPrices.includes(priceId)) return json({ error: "invalid_priceId" }, 400, withCors(request));
+  const allowedPrices = [env.PRICE_10, env.PRICE_25, env.PRICE_100].filter(Boolean);
+  if (!allowedPrices.includes(priceId)) return jsonError(request, 400, "invalid_priceId");
 
   const allowedReturnOrigins = getAllowedReturnOrigins(env);
   const returnOrigin = normalizeOrigin(returnUrlBaseRaw);
 
-  if (!returnOrigin) return json({ error: "missing_or_invalid_returnUrlBase" }, 400, withCors(request));
+  if (!returnOrigin) return jsonError(request, 400, "missing_or_invalid_returnUrlBase");
 
   if (!allowedReturnOrigins.has(returnOrigin)) {
-    return json(
-      { allowed: Array.from(allowedReturnOrigins).sort(), error: "return_origin_not_allowed", returnOrigin },
-      400,
-      withCors(request)
-    );
+    return jsonError(request, 400, "return_origin_not_allowed", { allowed: Array.from(allowedReturnOrigins).sort(), returnOrigin });
   }
 
   const successPath = successPathRaw === "/payment-confirmation" ? "/payment-confirmation" : "/payment-confirmation";
 
-  const session = await stripeFetch(env, "POST", "/checkout/sessions", {
-    mode: "payment",
-    "line_items[0][price]": priceId,
-    "line_items[0][quantity]": "1",
-    cancel_url: `${returnOrigin}/index.html#pricing`,
-    success_url: `${returnOrigin}${successPath}?session_id={CHECKOUT_SESSION_ID}&tokenId=${encodeURIComponent(tokenId)}`,
-    "metadata[priceId]": priceId,
-    "metadata[tokenId]": tokenId,
-  });
+  try {
+    const session = await stripeFetch(env, "POST", "/checkout/sessions", {
+      mode: "payment",
+      "line_items[0][price]": priceId,
+      "line_items[0][quantity]": "1",
+      cancel_url: `${returnOrigin}/index.html#pricing`,
+      success_url: `${returnOrigin}${successPath}?session_id={CHECKOUT_SESSION_ID}&tokenId=${encodeURIComponent(tokenId)}`,
+      "metadata[priceId]": priceId,
+      "metadata[tokenId]": tokenId,
+    });
 
-  return json({ id: session.id, url: session.url }, 200, withCors(request));
+    return json({ id: session.id, url: session.url }, 200, withCors(request));
+  } catch (err) {
+    return jsonError(request, 502, "checkout_temporarily_unavailable", String(err?.message || err));
+  }
 }
 
 async function handleGetTranscriptTokens(request, url, env) {
@@ -830,30 +856,36 @@ export default {
     if (url.pathname.startsWith("/transcript/")) {
       const pre = handleCorsPreflight(request);
       if (pre) return pre;
+
+      try {
+        if (request.method === "GET" && isPath(url, "/transcript/prices")) {
+          return await handleGetTranscriptPrices(request, env);
+        }
+
+        if (request.method === "POST" && isPath(url, "/transcript/checkout")) {
+          return await handleCreateTranscriptCheckout(request, env);
+        }
+
+        if (request.method === "GET" && isPath(url, "/transcript/tokens")) {
+          return await handleGetTranscriptTokens(request, url, env);
+        }
+
+        if (request.method === "POST" && isPath(url, "/transcript/consume")) {
+          return await handleConsumeTranscriptTokens(request, env, ctx);
+        }
+
+        if (request.method === "POST" && isPath(url, "/transcript/stripe/webhook")) {
+          return await handleTranscriptStripeWebhook(request, env, ctx);
+        }
+
+        return jsonError(request, 404, "not_found");
+      } catch (err) {
+        return jsonError(request, 500, "internal_error", String(err?.message || err));
+      }
     }
 
     if (request.method === "GET" && isPath(url, "/health")) {
       return jsonResponse({ ok: true, service: "taxmonitor-pro-api" }, { status: 200 });
-    }
-
-    if (request.method === "GET" && isPath(url, "/transcript/prices")) {
-      return await handleGetTranscriptPrices(request, env);
-    }
-
-    if (request.method === "POST" && isPath(url, "/transcript/checkout")) {
-      return await handleCreateTranscriptCheckout(request, env);
-    }
-
-    if (request.method === "GET" && isPath(url, "/transcript/tokens")) {
-      return await handleGetTranscriptTokens(request, url, env);
-    }
-
-    if (request.method === "POST" && isPath(url, "/transcript/consume")) {
-      return await handleConsumeTranscriptTokens(request, env, ctx);
-    }
-
-    if (request.method === "POST" && isPath(url, "/transcript/stripe/webhook")) {
-      return await handleTranscriptStripeWebhook(request, env, ctx);
     }
 
     if (isPath(url, "/cal/webhook")) return await handleCalWebhook(request, env, ctx);
