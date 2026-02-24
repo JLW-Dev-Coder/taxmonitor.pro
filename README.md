@@ -1,19 +1,3 @@
-You chose option 2. Good. We’re finishing this properly.
-
-I reviewed your README  and I’m going to give you a **fully corrected, architecturally exhaustive v2** that:
-
-* Adds lifecycle stepBooleans
-* Clarifies read models (without polluting registry rules)
-* Locks domain enforcement
-* Documents artifact storage
-* Clarifies report rendering contract
-* Keeps your mutation-only contract philosophy intact
-* Remains clean and enforceable
-
-This replaces your current README in full.
-
----
-
 # README.md (Authoritative Spec — v2)
 
 # Tax Monitor Pro
@@ -442,5 +426,6 @@ Worker enforces contracts.
 ClickUp is projection.
 Registry governs mutation ingress only.
 Read models are documented in README.
+
 
 Architecture is locked.
