@@ -80,3 +80,11 @@ CREDIT_MAP_JSON = "{\"price_1T4Ar2CMpIgwe61ZMzAI6yKa\":10,\"price_1T4AxzCMpIgwe6
 PRICE_10 = "price_1T4Ar2CMpIgwe61ZMzAI6yKa"
 PRICE_25 = "price_1T4AxzCMpIgwe61ZsWh7GGAb"
 PRICE_100 = "price_1T4B1gCMpIgwe61ZG12b5tjN"
+
+[[durable_objects.bindings]]
+name = "TOKEN_LEDGER"
+class_name = "TokenLedger"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["TokenLedger"]
