@@ -55,8 +55,8 @@ function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
-      "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store",
+      "content-type": "application/json; charset=utf-8",
       ...headers,
     },
   });
@@ -73,10 +73,7 @@ function isPath(url, pathname) {
 
 function withCors(request, headers = {}) {
   const origin = request.headers.get("origin") || "";
-  const allowed = new Set([
-    "https://transcript.taxmonitor.pro",
-    "https://taxmonitor.pro",
-  ]);
+  const allowed = new Set(["https://taxmonitor.pro", "https://transcript.taxmonitor.pro"]);
 
   const out = {
     "access-control-allow-headers": "content-type, stripe-signature",
@@ -97,6 +94,37 @@ function handleCorsPreflight(request) {
 function assertEnv(env, keys) {
   const missing = keys.filter((k) => !env[k]);
   if (missing.length) throw new Error(`Missing env vars: ${missing.join(", ")}`);
+}
+
+/* ------------------------------------------
+ * Transcript: Return origin allowlist (strict)
+ * ------------------------------------------ */
+
+function normalizeOrigin(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return "";
+  }
+}
+
+function getAllowedReturnOrigins(env) {
+  const fallback = ["https://transcript.taxmonitor.pro"];
+
+  const raw = String(env.TRANSCRIPT_RETURN_ORIGINS_JSON || "").trim();
+  if (!raw) return new Set(fallback);
+
+  try {
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return new Set(fallback);
+
+    const normalized = arr.map(normalizeOrigin).filter(Boolean);
+    return new Set(normalized.length ? normalized : fallback);
+  } catch {
+    return new Set(fallback);
+  }
 }
 
 /* ------------------------------------------
@@ -123,7 +151,7 @@ async function parseInboundBody(request) {
     const fd = await request.formData();
     const data = {};
     for (const [k, v] of fd.entries()) {
-      data[k] = typeof v === "string" ? v : (v?.name || "uploaded_file");
+      data[k] = typeof v === "string" ? v : v?.name || "uploaded_file";
     }
     return { ok: true, data, type: "form" };
   } catch (error) {
@@ -175,11 +203,11 @@ function normalizeOrderPayload(input) {
   };
 
   const normalized = {
+    notes: get("Notes") || get("notes"),
     orderToken: get("CF_Order Token") || get("Order Token") || get("orderToken"),
     orderType: get("Order Type") || get("orderType"),
     primaryEmail: get("CRM Primary Email") || get("Email") || get("email"),
     productName: get("Product Name") || get("Plan") || get("productName"),
-    notes: get("Notes") || get("notes"),
   };
 
   const missing = [];
@@ -368,9 +396,9 @@ async function createClickUpAccountTask(env, account, receipt) {
     "",
     "Submitted:",
     `- Estimated Balance Due Range: ${account.metadata?.estimatedBalanceDueRange || "—"}`,
+    `- IRS Notice Date: ${account.metadata?.irsNoticeDate || "—"}`,
     `- IRS Notice Received: ${account.metadata?.irsNoticeReceived || "—"}`,
     `- IRS Notice Type: ${account.metadata?.irsNoticeType || "—"}`,
-    `- IRS Notice Date: ${account.metadata?.irsNoticeDate || "—"}`,
     `- Primary Concern: ${account.metadata?.primaryConcern || "—"}`,
     `- Unfiled Returns Indicator: ${account.metadata?.unfiledReturnsIndicator || "—"}`,
     `- Urgency Level: ${account.metadata?.urgencyLevel || "—"}`,
@@ -426,8 +454,7 @@ async function ensureClickUpAccountTask(env, account, accountKey, receipt) {
 async function createClickUpOrderTask(env, account, order, receipt) {
   if (!env.CLICKUP_ORDERS_LIST_ID) throw new Error("Missing CLICKUP_ORDERS_LIST_ID");
 
-  const name =
-    `Order — ${account.firstName || ""} ${account.lastName || ""}`.trim() || `Order — ${account.accountId}`;
+  const name = (`Order — ${account.firstName || ""} ${account.lastName || ""}`.trim() || `Order — ${account.accountId}`);
 
   const description = [
     `Account: ${account.firstName || ""} ${account.lastName || ""}`.trim(),
@@ -460,8 +487,7 @@ async function createClickUpOrderTask(env, account, order, receipt) {
 async function createClickUpSupportTask(env, account, support, receipt) {
   if (!env.CLICKUP_SUPPORT_LIST_ID) throw new Error("Missing CLICKUP_SUPPORT_LIST_ID");
 
-  const name =
-    `Support — ${account.firstName || ""} ${account.lastName || ""}`.trim() || `Support — ${account.accountId}`;
+  const name = (`Support — ${account.firstName || ""} ${account.lastName || ""}`.trim() || `Support — ${account.accountId}`);
 
   const description = [
     `Account: ${account.firstName || ""} ${account.lastName || ""}`.trim(),
@@ -629,7 +655,7 @@ function getLedgerStub(env, tokenId) {
  * ------------------------------------------ */
 
 async function handleGetTranscriptPrices(request, env) {
-  assertEnv(env, ["PRICE_10", "PRICE_25", "PRICE_100", "CREDIT_MAP_JSON", "STRIPE_SECRET_KEY"]);
+  assertEnv(env, ["CREDIT_MAP_JSON", "PRICE_10", "PRICE_100", "PRICE_25", "STRIPE_SECRET_KEY"]);
 
   const creditMap = JSON.parse(env.CREDIT_MAP_JSON);
   const priceIds = [env.PRICE_10, env.PRICE_25, env.PRICE_100].sort();
@@ -644,11 +670,7 @@ async function handleGetTranscriptPrices(request, env) {
       credits,
       currency: (price.currency || "usd").toUpperCase(),
       label: "Transcript.Tax Monitor Pro",
-      perks: [
-        "Client-ready report preview",
-        "Credits applied instantly",
-        "Local PDF parsing (no uploads)",
-      ].sort(),
+      perks: ["Client-ready report preview", "Credits applied instantly", "Local PDF parsing (no uploads)"].sort(),
       priceId,
       recommended: credits === 25,
     });
@@ -659,13 +681,12 @@ async function handleGetTranscriptPrices(request, env) {
 }
 
 async function handleCreateTranscriptCheckout(request, env) {
-  assertEnv(env, ["PRICE_10", "PRICE_25", "PRICE_100", "CREDIT_MAP_JSON", "STRIPE_SECRET_KEY"]);
+  assertEnv(env, ["CREDIT_MAP_JSON", "PRICE_10", "PRICE_100", "PRICE_25", "STRIPE_SECRET_KEY"]);
 
   const body = await request.json().catch(() => ({}));
   const priceId = typeof body?.priceId === "string" ? body.priceId.trim() : "";
   const tokenId = typeof body?.tokenId === "string" ? body.tokenId.trim() : "";
 
-  // New: return URL inputs from client
   const returnUrlBaseRaw = typeof body?.returnUrlBase === "string" ? body.returnUrlBase.trim() : "";
   const successPathRaw = typeof body?.successPath === "string" ? body.successPath.trim() : "";
 
@@ -675,64 +696,31 @@ async function handleCreateTranscriptCheckout(request, env) {
   const allowedPrices = [env.PRICE_10, env.PRICE_25, env.PRICE_100];
   if (!allowedPrices.includes(priceId)) return json({ error: "invalid_priceId" }, 400, withCors(request));
 
-  // Strict allowlist validation
   const allowedReturnOrigins = getAllowedReturnOrigins(env);
   const returnOrigin = normalizeOrigin(returnUrlBaseRaw);
 
-  if (!returnOrigin) {
-    return json({ error: "missing_or_invalid_returnUrlBase" }, 400, withCors(request));
-  }
+  if (!returnOrigin) return json({ error: "missing_or_invalid_returnUrlBase" }, 400, withCors(request));
 
   if (!allowedReturnOrigins.has(returnOrigin)) {
     return json(
-      { error: "return_origin_not_allowed", returnOrigin, allowed: Array.from(allowedReturnOrigins).sort() },
+      { allowed: Array.from(allowedReturnOrigins).sort(), error: "return_origin_not_allowed", returnOrigin },
       400,
       withCors(request)
     );
   }
 
-  // Strict path: default to /payment-confirmation, ignore weird input
   const successPath = successPathRaw === "/payment-confirmation" ? "/payment-confirmation" : "/payment-confirmation";
 
   const session = await stripeFetch(env, "POST", "/checkout/sessions", {
     mode: "payment",
     "line_items[0][price]": priceId,
     "line_items[0][quantity]": "1",
-
-    // ✅ Uses client site origin, not API origin
-    success_url: `${returnOrigin}${successPath}?session_id={CHECKOUT_SESSION_ID}&tokenId=${encodeURIComponent(tokenId)}`,
     cancel_url: `${returnOrigin}/index.html#pricing`,
-
-    "metadata[tokenId]": tokenId,
+    success_url: `${returnOrigin}${successPath}?session_id={CHECKOUT_SESSION_ID}&tokenId=${encodeURIComponent(tokenId)}`,
     "metadata[priceId]": priceId,
+    "metadata[tokenId]": tokenId,
   });
 
-  return json({ id: session.id, url: session.url }, 200, withCors(request));
-}
-
-function getAllowedReturnOrigins(env) {
-  // Clean + strict:
-  // - Prefer explicit env allowlist
-  // - Fall back to transcript.taxmonitor.pro only
-  const fallback = ["https://transcript.taxmonitor.pro"];
-
-  const raw = String(env.TRANSCRIPT_RETURN_ORIGINS_JSON || "").trim();
-  if (!raw) return new Set(fallback);
-
-  try {
-    const arr = JSON.parse(raw);
-    if (!Array.isArray(arr)) return new Set(fallback);
-
-    const normalized = arr
-      .map(normalizeOrigin)
-      .filter(Boolean);
-
-    return new Set(normalized.length ? normalized : fallback);
-  } catch {
-    return new Set(fallback);
-  }
-}
-  
   return json({ id: session.id, url: session.url }, 200, withCors(request));
 }
 
@@ -781,7 +769,7 @@ async function handleConsumeTranscriptTokens(request, env, ctx) {
 }
 
 async function handleTranscriptStripeWebhook(request, env, ctx) {
-  assertEnv(env, ["STRIPE_WEBHOOK_SECRET", "CREDIT_MAP_JSON"]);
+  assertEnv(env, ["CREDIT_MAP_JSON", "STRIPE_WEBHOOK_SECRET"]);
 
   const sig = request.headers.get("stripe-signature");
   if (!sig) return json({ error: "missing_signature" }, 400);
@@ -839,18 +827,15 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // Transcript CORS preflight
     if (url.pathname.startsWith("/transcript/")) {
       const pre = handleCorsPreflight(request);
       if (pre) return pre;
     }
 
-    // Health
     if (request.method === "GET" && isPath(url, "/health")) {
       return jsonResponse({ ok: true, service: "taxmonitor-pro-api" }, { status: 200 });
     }
 
-    // Transcript routes
     if (request.method === "GET" && isPath(url, "/transcript/prices")) {
       return await handleGetTranscriptPrices(request, env);
     }
@@ -871,7 +856,6 @@ export default {
       return await handleTranscriptStripeWebhook(request, env, ctx);
     }
 
-    // Existing app routes
     if (isPath(url, "/cal/webhook")) return await handleCalWebhook(request, env, ctx);
     if (isPath(url, "/forms/intake")) return await handleFormsIntake(request, env, ctx);
     if (isPath(url, "/forms/order")) return await handleFormsOrder(request, env, ctx);
@@ -1000,7 +984,14 @@ async function handleFormsIntake(request, env, ctx) {
     await writeJsonR2(env, receiptKey, receipt);
 
     return jsonResponse(
-      { ok: true, accountId, clickUpTaskId, eventId, message: "Intake processed: receipt + canonical + ClickUp.", receivedAs: parsed.type },
+      {
+        ok: true,
+        accountId,
+        clickUpTaskId,
+        eventId,
+        message: "Intake processed: receipt + canonical + ClickUp.",
+        receivedAs: parsed.type,
+      },
       { status: 200 }
     );
   } catch (err) {
@@ -1124,7 +1115,6 @@ async function handleFormsOrder(request, env, ctx) {
         ].join(" ");
 
         await addClickUpComment(env, orderTaskId, comment);
-
         await setClickUpTaskCustomField(env, accountTaskId, CU_ACCOUNTS_CF.accountOrderTaskLink, [orderTaskId]);
       }
     }
@@ -1296,5 +1286,3 @@ async function handleStripeWebhook(request, env, ctx) {
   console.log("[stripe] webhook received", { type: parsed.value?.type, id: parsed.value?.id });
   return jsonResponse({ ok: true }, { status: 200 });
 }
-
-
