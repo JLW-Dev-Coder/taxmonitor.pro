@@ -91,6 +91,180 @@ function handleCorsPreflight(request) {
   return new Response(null, { status: 204, headers: withCors(request) });
 }
 
+/* ------------------------------------------
+ * Transcript: Report Email helpers (CORS + Gmail)
+ * ------------------------------------------ */
+
+function corsHeadersForRequest(req) {
+  const origin = req.headers.get("Origin") || "";
+  const allowed = [
+    "https://transcript.taxmonitor.pro",
+  ];
+
+  if (!origin) return {};
+  const ok = allowed.includes(origin);
+
+  return {
+    "Access-Control-Allow-Credentials": "false",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "OPTIONS, POST",
+    "Access-Control-Allow-Origin": ok ? origin : "null",
+    "Access-Control-Max-Age": "86400",
+    "Vary": "Origin",
+  };
+}
+
+function isLikelyEmail(v) {
+  const s = String(v || "").trim().toLowerCase();
+  if (!s || s.length > 254) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+}
+
+function isTokenIdFormat(v) {
+  const s = String(v || "").trim();
+  return /^[A-Za-z0-9_-]{8,128}$/.test(s);
+}
+
+function isSafeReportUrl(v) {
+  const s = String(v || "").trim();
+  if (!s) return false;
+  if (s.length > 12000) return false;
+  return s.startsWith("https://transcript.taxmonitor.pro/assets/report-preview.html#");
+}
+
+function pemToArrayBuffer(pem) {
+  const clean = String(pem || "")
+    .replace(/-----BEGIN[\s\S]*?-----/g, "")
+    .replace(/-----END[\s\S]*?-----/g, "")
+    .replace(/\s+/g, "");
+  const bin = atob(clean);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes.buffer;
+}
+
+function b64UrlEncode(bytes) {
+  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes || []);
+  let bin = "";
+  for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+async function googleServiceAccountAccessToken(env, subjectUser, scopes) {
+  const now = Math.floor(Date.now() / 1000);
+  const iat = now - 5;
+  const exp = now + 55 * 60;
+
+  const tokenUri = env.GOOGLE_TOKEN_URI;
+  const clientEmail = env.GOOGLE_CLIENT_EMAIL;
+  const privateKeyPem = env.GOOGLE_PRIVATE_KEY;
+
+  if (!tokenUri || !clientEmail || !privateKeyPem) {
+    throw new Error("Missing Google env vars: GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY, GOOGLE_TOKEN_URI.");
+  }
+  if (!subjectUser) {
+    throw new Error("Missing Workspace user env var: GOOGLE_WORKSPACE_USER_*.");
+  }
+
+  const header = { alg: "RS256", typ: "JWT" };
+  const claim = {
+    aud: tokenUri,
+    exp,
+    iat,
+    iss: clientEmail,
+    scope: (Array.isArray(scopes) ? scopes : [String(scopes)]).join(" "),
+    sub: subjectUser,
+  };
+
+  const enc = (obj) => b64UrlEncode(new TextEncoder().encode(JSON.stringify(obj)));
+  const signingInput = enc(header) + "." + enc(claim);
+
+  const key = await crypto.subtle.importKey(
+    "pkcs8",
+    pemToArrayBuffer(privateKeyPem),
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const sig = await crypto.subtle.sign(
+    { name: "RSASSA-PKCS1-v1_5" },
+    key,
+    new TextEncoder().encode(signingInput)
+  );
+
+  const jwt = signingInput + "." + b64UrlEncode(new Uint8Array(sig));
+
+  const body = new URLSearchParams();
+  body.set("assertion", jwt);
+  body.set("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
+
+  const res = await fetch(tokenUri, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error("Google token exchange failed (" + String(res.status) + "): " + (t || res.statusText));
+  }
+
+  const json = await res.json();
+  const accessToken = json && json.access_token ? String(json.access_token) : "";
+  if (!accessToken) throw new Error("Google token exchange returned no access_token.");
+  return accessToken;
+}
+
+function makeRfc2822({ from, to, subject, text }) {
+  const safeSubject = String(subject || "").replace(/[\r\n]+/g, " ").trim();
+  const safeFrom = String(from || "").replace(/[\r\n]+/g, "").trim();
+  const safeTo = String(to || "").replace(/[\r\n]+/g, "").trim();
+  const safeText = String(text || "").replace(/\r\n/g, "\n");
+
+  return [
+    "From: " + safeFrom,
+    "To: " + safeTo,
+    "Subject: " + safeSubject,
+    "MIME-Version: 1.0",
+    "Content-Type: text/plain; charset=UTF-8",
+    "Content-Transfer-Encoding: 7bit",
+    "",
+    safeText,
+    "",
+  ].join("\n");
+}
+
+async function gmailSendMessage(env, { from, to, subject, text }) {
+  const workspaceUser =
+    env.GOOGLE_WORKSPACE_USER_SUPPORT ||
+    env.GOOGLE_WORKSPACE_USER_NOREPLY ||
+    env.GOOGLE_WORKSPACE_USER_DEFAULT;
+
+  const token = await googleServiceAccountAccessToken(env, workspaceUser, [
+    "https://www.googleapis.com/auth/gmail.send",
+  ]);
+
+  const rfc = makeRfc2822({ from, to, subject, text });
+  const raw = b64UrlEncode(new TextEncoder().encode(rfc));
+
+  const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ raw }),
+  });
+
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error("Gmail send failed (" + String(res.status) + "): " + (t || res.statusText));
+  }
+
+  return await res.json().catch(() => ({}));
+}
+
 function assertEnv(env, keys) {
   const missing = keys.filter((k) => !env[k]);
   if (missing.length) throw new Error(`Missing env vars: ${missing.join(", ")}`);
@@ -888,6 +1062,12 @@ export default {
       return jsonResponse({ ok: true, service: "taxmonitor-pro-api" }, { status: 200 });
     }
 
+    if (request.method === "OPTIONS" && isPath(url, "/forms/transcript/report-email")) {
+      return new Response("", { status: 204, headers: corsHeadersForRequest(request) });
+    }
+
+    if (isPath(url, "/forms/transcript/report-email")) return await handleFormsTranscriptReportEmail(request, env, ctx);
+
     if (isPath(url, "/cal/webhook")) return await handleCalWebhook(request, env, ctx);
     if (isPath(url, "/forms/intake")) return await handleFormsIntake(request, env, ctx);
     if (isPath(url, "/forms/order")) return await handleFormsOrder(request, env, ctx);
@@ -1300,6 +1480,93 @@ async function handleFormsSupport(request, env, ctx) {
       { status: 500 }
     );
   }
+}
+
+/* ------------------------------------------
+ * FORMS: Transcript Report Email
+ * ------------------------------------------ */
+
+async function handleFormsTranscriptReportEmail(request, env, ctx) {
+  if (!requireMethod(request, ["POST"])) {
+    return new Response(JSON.stringify({ ok: false, error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeadersForRequest(request), "Content-Type": "application/json; charset=utf-8" },
+    });
+  }
+
+  const parsed = await parseInboundBody(request);
+  if (!parsed.ok) {
+    return new Response(JSON.stringify({ ok: false, error: parsed.error, details: parsed.details }), {
+      status: 400,
+      headers: { ...corsHeadersForRequest(request), "Content-Type": "application/json; charset=utf-8" },
+    });
+  }
+
+  const email = String(parsed.data?.email || "").trim();
+  const eventId = String(parsed.data?.eventId || "").trim();
+  const reportId = String(parsed.data?.reportId || "").trim();
+  const reportUrl = String(parsed.data?.reportUrl || "").trim();
+  const tokenId = String(parsed.data?.tokenId || "").trim();
+
+  const missing = [];
+  if (!email) missing.push("email");
+  if (!eventId) missing.push("eventId");
+  if (!reportId) missing.push("reportId");
+  if (!reportUrl) missing.push("reportUrl");
+  if (!tokenId) missing.push("tokenId");
+
+  if (missing.length) {
+    return new Response(JSON.stringify({ ok: false, error: "Missing required fields", missing }), {
+      status: 400,
+      headers: { ...corsHeadersForRequest(request), "Content-Type": "application/json; charset=utf-8" },
+    });
+  }
+
+  if (!isLikelyEmail(email)) {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid email" }), {
+      status: 400,
+      headers: { ...corsHeadersForRequest(request), "Content-Type": "application/json; charset=utf-8" },
+    });
+  }
+
+  if (!isTokenIdFormat(tokenId)) {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid tokenId format" }), {
+      status: 400,
+      headers: { ...corsHeadersForRequest(request), "Content-Type": "application/json; charset=utf-8" },
+    });
+  }
+
+  if (!isSafeReportUrl(reportUrl)) {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid reportUrl" }), {
+      status: 400,
+      headers: { ...corsHeadersForRequest(request), "Content-Type": "application/json; charset=utf-8" },
+    });
+  }
+
+  const fromUser =
+    env.GOOGLE_WORKSPACE_USER_SUPPORT ||
+    env.GOOGLE_WORKSPACE_USER_NOREPLY ||
+    env.GOOGLE_WORKSPACE_USER_DEFAULT;
+
+  const from = "Transcript Tax Monitor Pro <" + String(fromUser || "support@taxmonitor.pro") + ">";
+  const subject = "Your Transcript Report Link";
+  const text =
+    "Here’s your report link:
+
+" +
+    reportUrl +
+    "
+
+" +
+    "Tip: Save this email. The link contains the report data (nothing is uploaded).
+";
+
+  await gmailSendMessage(env, { from, to: email, subject, text });
+
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { ...corsHeadersForRequest(request), "Content-Type": "application/json; charset=utf-8" },
+  });
 }
 
 /* ------------------------------------------
