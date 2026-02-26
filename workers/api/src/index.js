@@ -943,7 +943,8 @@ async function handleConsumeTranscriptTokens(request, env, ctx) {
   if (!tokenId) return json({ error: "missing_tokenId" }, 400, withCors(request));
   if (!Number.isFinite(amount) || amount <= 0) return json({ error: "invalid_amount" }, 400, withCors(request));
 
-  const requestId = crypto.randomUUID();
+  const requestIdRaw = typeof body?.requestId === "string" ? body.requestId.trim() : "";
+  const requestId = isUuidLike(requestIdRaw) ? requestIdRaw : crypto.randomUUID();
   const stub = getLedgerStub(env, tokenId);
 
   const res = await stub.fetch("https://ledger/consume", {
@@ -1539,6 +1540,22 @@ async function handleFormsTranscriptReportEmail(request, env, ctx) {
   if (!isSafeReportUrl(reportUrl)) {
     return new Response(JSON.stringify({ ok: false, error: "Invalid reportUrl" }), {
       status: 400,
+      headers: { ...corsHeadersForRequest(request), "Content-Type": "application/json; charset=utf-8" },
+    });
+  }
+
+  // Enforce 1-credit consumption for report-email (idempotent by eventId)
+  const stub = getLedgerStub(env, tokenId);
+  const consumeRes = await stub.fetch("https://ledger/consume", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ amount: 1, requestId: eventId }),
+  });
+
+  const consumeOut = await consumeRes.json().catch(() => ({}));
+  if (!consumeRes.ok) {
+    return new Response(JSON.stringify({ ok: false, error: consumeOut?.error || "insufficient_balance", details: consumeOut }), {
+      status: consumeRes.status || 402,
       headers: { ...corsHeadersForRequest(request), "Content-Type": "application/json; charset=utf-8" },
     });
   }
