@@ -1563,22 +1563,21 @@ async function handleFormsTranscriptReportEmail(request, env, ctx) {
 
   const from = "Transcript Tax Monitor Pro <" + String(fromUser || "support@taxmonitor.pro") + ">";
   const subject = "Your Transcript Report Link";
-  const text =
-    "Here’s your report link:
+  const text = `Here’s your report link:
 
-" +
-    reportUrl +
-    "
+${reportUrl}
 
-" +
-    "Tip: Save this email. The link contains the report data (nothing is uploaded).
-";
+Tip: Save this email. The link contains the report data (nothing is uploaded).
+`;
 
   await gmailSendMessage(env, { from, to: email, subject, text });
 
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
-    headers: { ...corsHeadersForRequest(request), "Content-Type": "application/json; charset=utf-8" },
+    headers: {
+      ...corsHeadersForRequest(request),
+      "Content-Type": "application/json; charset=utf-8",
+    },
   });
 }
 
@@ -1598,4 +1597,5 @@ async function handleStripeWebhook(request, env, ctx) {
   console.log("[stripe] webhook received", { type: parsed.value?.type, id: parsed.value?.id });
   return jsonResponse({ ok: true }, { status: 200 });
 }
+
 
