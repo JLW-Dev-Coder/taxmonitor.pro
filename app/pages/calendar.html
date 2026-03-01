@@ -6,6 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tax Monitor Pro — Account Calendar</title>
 
+    <!-- =========================================================
+         Cal OAuth Bridge (Approved Redirect URI -> VLP Worker)
+         Cal redirects to: https://app.taxmonitor.pro/pages/calendar
+         We forward: code + state -> https://api.virtuallaunch.pro/cal/oauth/callback
+         ========================================================= -->
+    <script>
+      (function () {
+        try {
+          const url = new URL(window.location.href);
+
+          const code = url.searchParams.get("code");
+          const error = url.searchParams.get("error");
+          const errorDescription = url.searchParams.get("error_description");
+          const state = url.searchParams.get("state");
+
+          if (error) {
+            const next = new URL("https://virtuallaunch.pro/va/dashboard");
+            next.searchParams.set("cal", "error");
+            next.searchParams.set("reason", errorDescription || error);
+            window.location.replace(next.toString());
+            return;
+          }
+
+          if (code && state) {
+            const next = new URL("https://api.virtuallaunch.pro/cal/oauth/callback");
+            next.searchParams.set("code", code);
+            next.searchParams.set("state", state);
+            window.location.replace(next.toString());
+          }
+        } catch (_) {
+          // ignore
+        }
+      })();
+    </script>
+
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script src="/_sdk/element_sdk.js"></script>
 
@@ -240,8 +275,6 @@
                       <div class="text-right flex flex-col items-end gap-2">
                         <p class="text-xs text-slate-500">Auto-sync every 6 hours</p>
                         <p id="last-sync-label" class="text-xs text-slate-400">Last synced: —</p>
-
-                        
                       </div>
                     </div>
 
