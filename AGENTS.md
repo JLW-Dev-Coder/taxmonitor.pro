@@ -1,178 +1,131 @@
-# AGENTS.md — Tax Monitor Pro (taxmonitor.pro-site)
+# AGENTS.md
 
-## Purpose
-This repository powers:
-- https://taxmonitor.pro (Cloudflare Pages UI)
-- https://api.taxmonitor.pro (Cloudflare Worker API)
+## Project: Tax Monitor Pro — Pages Layer
 
-This is a revenue-critical system.
+This repository builds the static site and app shell for:
 
-Agents must prioritize correctness, contracts, and minimal diffs over refactoring or aesthetic improvements.
+https://taxmonitor.pro
 
----
+It deploys via Cloudflare Pages.
 
-# Core Architectural Rules
+Worker API lives separately at:
+https://api.taxmonitor.pro
 
-## R2 Is Authority
-All state flows must follow:
 
-receipt append → canonical R2 upsert → ClickUp projection
+## Build Contract
 
-Never:
-- Write directly to ClickUp before R2 update
-- Mutate canonical state outside Worker logic
+Build command:
+node build.mjs
 
----
+Output directory:
+dist
+
+dist/ must never be committed.
+
+
+## Repository Scope
+
+This repo:
+- Serves static pages
+- Injects partials via build.mjs
+- Copies assets/styles/legal into dist
+- Serves app under /app/*
+
+This repo does NOT:
+- Run the Worker
+- Require Wrangler
+- Require npm
+- Require package.json
+- Require node_modules
+
+Node built-ins only.
+
+
+## Working Directory Rule (CRITICAL)
+
+Agents must NOT assume a fixed path such as:
+
+/workspace/taxmonitor.pro-site
+
+Agents must:
+1. Locate build.mjs
+2. cd to that directory
+3. Execute build from that directory
+
+Hardcoded paths are forbidden.
+
 
 ## Domain & Routing Contract
 
 Pages:
-- Served from https://taxmonitor.pro
+https://taxmonitor.pro
 
-API:
-- Served from https://api.taxmonitor.pro
+Worker API:
+https://api.taxmonitor.pro
 
-All forms must POST to:
+Forms must POST absolute to:
 https://api.taxmonitor.pro/forms/*
 
-Never:
-- Use relative form actions (e.g. /forms/...)
-- Use localhost endpoints
-- Introduce alternate API domains
+Relative form actions are forbidden.
 
----
 
-## Worker Rules
+## Redirect Safety
 
-Worker file:
-workers/api/src/index.js
+_redirects must not contain catch-all rewrites that swallow valid pages.
 
-Rules:
-- Validate payloads against contracts
-- enumStrict = true
-- normalizeCheckboxToBoolean = true
-- rejectUnknownValues = true
-- Append receipt before canonical mutation
-- Deduplicate by eventId
-- Stripe dedupe key = Stripe Session ID
+Examples of forbidden rules:
 
-Never:
-- Bypass receipt append
-- Modify R2 key structure
-- Invent new lifecycle steps
-- Add new ClickUp custom fields
+/* /index.html 200
+/app/* /app/index.html 200
 
----
+Unless explicitly documented.
 
-## Contracts
 
-Source of truth:
-app/contracts/
+## Audit Enforcement
 
-Contract registry:
-app/contracts/contract-registry.json
+Audit scripts must:
+- Use Node built-ins only (fs, path, url)
+- Not install dependencies
+- Not modify existing HTML/CSS
+- Not require environment variables
 
-Agents must:
-- Never remove contracts without justification
-- Never rename endpoints casually
-- Ensure page POSTs match contract endpoints exactly
+Missing referenced files = Blocker.
+Missing dist pages = Blocker.
+Incorrect form POST endpoints = Blocker.
 
-If a page posts to a Worker endpoint:
-- A contract must exist
-- The Worker must implement it
-- The endpoint must be absolute
 
----
+## Commit Scope Rules
 
-## Build System
+When performing audit tasks:
 
-Build file:
-build.mjs
+Allowed:
+- /audit/**
+- LAUNCH_READINESS.md
 
-Dist directory:
-dist/
+Forbidden:
+- Editing app HTML
+- Editing site HTML
+- Editing CSS
+- Editing Worker files
+- Editing build.mjs (unless explicitly authorized)
 
-Rules:
-- Do not change output structure without explicit instruction
-- Ensure site/*, app/*, assets/*, legal/*, styles/*, _redirects are correctly emitted
-- Partial injection must not modify unrelated HTML
 
----
+## CI / Codex Safety
 
-## Forms
+Never run:
+npm install
+npm ci
+npm run build
 
-All form submissions must include:
-- eventId
-- sessionToken (if required by lifecycle phase)
+Always run:
+node build.mjs
 
-Never:
-- Remove eventId usage
-- Change stepBoolean names
-- Introduce new lifecycle steps
 
----
+## Stability Rule
 
-## Compliance + 2848
+If build behavior changes, update:
+- AGENTS.md
+- LAUNCH_READINESS.md
+- audit scripts
 
-Section 3 values are locked:
-- Tax type
-- Forms list
-- Years 2016 - 2025
-
-These values must:
-- Be read-only
-- Be re-applied on page load
-- Not be modified without explicit instruction
-
----
-
-# Modification Rules
-
-Agents must:
-- Prefer smallest possible diff
-- Avoid refactoring unless required to fix a blocker
-- Avoid renaming files
-- Avoid reorganizing directories
-- Avoid adding dependencies
-
-When fixing:
-- Fix only the identified issue
-- Do not improve unrelated code
-- Do not reformat entire files
-
----
-
-# Launch Readiness Criteria
-
-A launch blocker includes:
-- Missing dist assets/pages
-- Broken internal links
-- Form posting to incorrect endpoint
-- Worker endpoint missing for referenced route
-- Contract mismatch
-
-Warnings:
-- Unused assets
-- Minor redundancy
-- Cosmetic inconsistencies
-
----
-
-# Explicit Non-Goals
-
-Do NOT:
-- Migrate frameworks
-- Introduce TypeScript
-- Introduce new build tooling
-- Redesign UI
-- Change lifecycle model
-- Modify R2 key structure
-
----
-
-# Tone of Changes
-
-This is production software tied to revenue.
-Stability > creativity.
-Precision > cleverness.
-Minimalism > refactor enthusiasm.
+Together.
