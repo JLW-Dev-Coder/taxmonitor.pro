@@ -108,6 +108,12 @@
    <main class="flex-1"><!-- Hero -->
     <section class="w-full px-6 pt-20 pb-16 md:pt-28 md:pb-24">
      <div class="max-w-3xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700 mb-8">
+       <svg class="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+       </svg>
+       <span id="trust-line" class="text-sm text-slate-300">Proactive monitoring by licensed tax professionals — intake does not create IRS representation.</span>
+      </div>
       <h1 id="main-title" class="text-4xl md:text-6xl font-bold tracking-tight mb-6 leading-tight">Understand and Master IRS Transcripts</h1>
       <p id="subtitle" class="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">Learn how to read, obtain, and interpret your IRS transcript in minutes.</p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -450,6 +456,12 @@
     <div class="divider-line"></div><!-- Final CTA -->
     <section class="w-full px-6 py-20 md:py-28 bg-slate-900/40">
      <div class="max-w-2xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700 mb-6">
+       <svg class="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+       </svg>
+       <span class="text-sm text-slate-300">Proactive monitoring by licensed tax professionals — intake does not create IRS representation.</span>
+      </div>
       <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Learn More?</h2>
       <p class="text-slate-400 text-lg mb-10">Start with the video series or download the free ebook.</p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -529,7 +541,8 @@
       main_title: 'Understand and Master IRS Transcripts',
       subtitle_text: 'Learn how to read, obtain, and interpret your IRS transcript in minutes.',
       cta_button_text: 'Watch Video Series',
-      methods_title: 'How to Obtain Transcripts'
+      methods_title: 'How to Obtain Transcripts',
+      trust_line: 'Proactive monitoring by licensed tax professionals — intake does not create IRS representation.'
     };
 
     // Safe HTML escaping
@@ -874,6 +887,11 @@
             methodsTitle.textContent = config.methods_title || defaultConfig.methods_title;
           }
 
+          const trustLine = document.getElementById('trust-line');
+          if (trustLine) {
+            trustLine.textContent = config.trust_line || defaultConfig.trust_line;
+          }
+
           const fontFamily = config.font_family || defaultConfig.font_family;
           document.body.style.fontFamily = `${fontFamily}, system-ui, sans-serif`;
 
@@ -894,9 +912,10 @@
         }),
         mapToEditPanelValues: (config) => new Map([
           ['main_title', config.main_title || defaultConfig.main_title],
+          ['methods_title', config.methods_title || defaultConfig.methods_title],
           ['subtitle_text', config.subtitle_text || defaultConfig.subtitle_text],
           ['cta_button_text', config.cta_button_text || defaultConfig.cta_button_text],
-          ['methods_title', config.methods_title || defaultConfig.methods_title]
+          ['trust_line', config.trust_line || defaultConfig.trust_line]
         ])
       });
     }
