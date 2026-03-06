@@ -1,0 +1,421 @@
+<!-- /site/about.html -->
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About | Tax Monitor Pro</title>
+  <meta name="description" content="Why Tax Monitor Pro exists: proactive transcript monitoring, human review, and clear next steps before IRS issues spiral." />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.ico">
+
+  <style>
+    html, body { height: 100%; }
+    body { box-sizing: border-box; overflow-x: hidden; }
+    * { font-family: 'DM Sans', sans-serif; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
+      50% { box-shadow: 0 0 36px rgba(245, 158, 11, 0.14); }
+    }
+
+    main section {
+      animation: fadeInUp 0.8s ease-out both;
+    }
+
+    main section:nth-of-type(1) { animation-delay: 0.10s; }
+    main section:nth-of-type(2) { animation-delay: 0.20s; }
+    main section:nth-of-type(3) { animation-delay: 0.30s; }
+    main section:nth-of-type(4) { animation-delay: 0.40s; }
+    main section:nth-of-type(5) { animation-delay: 0.50s; }
+
+    .divider-line {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
+      height: 1px;
+      width: 100%;
+    }
+
+    .tm-btn-primary {
+      background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+      transition: all 0.2s ease;
+    }
+
+    .tm-btn-primary:hover {
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.18);
+      transform: translateY(-2px);
+    }
+
+    .tm-btn-secondary {
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      transition: all 0.2s ease;
+    }
+
+    .tm-btn-secondary:hover {
+      background: rgba(245, 158, 11, 0.10);
+      border-color: rgba(245, 158, 11, 0.55);
+    }
+
+    .tm-card-hover {
+      transition: all 0.25s ease;
+    }
+
+    .tm-card-hover:hover {
+      border-color: rgba(245, 158, 11, 0.35);
+      transform: translateY(-4px);
+    }
+
+    .tm-icon-accent {
+      color: #f59e0b;
+    }
+
+    .tm-floaty {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .tm-floaty:nth-child(2) { animation-delay: -1s; }
+    .tm-floaty:nth-child(3) { animation-delay: -2s; }
+    .tm-floaty:nth-child(4) { animation-delay: -3s; }
+    .tm-floaty:nth-child(5) { animation-delay: -4s; }
+    .tm-floaty:nth-child(6) { animation-delay: -5s; }
+
+    .tm-glow-card {
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+  </style>
+
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+</head>
+
+<body class="h-full bg-slate-950 text-slate-100">
+  <div id="app" class="min-h-screen flex flex-col">
+
+    <!-- PARTIAL:header -->
+
+    <main class="flex-1">
+
+      <!-- Hero -->
+      <section class="w-full px-6 pt-12 pb-12 md:pt-20 md:pb-20">
+        <div class="max-w-3xl mx-auto text-center">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700 mb-8">
+            <svg class="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span id="trust-line" class="text-sm text-slate-300">Proactive monitoring by licensed tax professionals — intake does not create IRS representation.</span>
+          </div>
+
+          <h1 id="hero-headline" class="text-4xl md:text-6xl font-bold tracking-tight mb-6 leading-tight">
+            Built for people tired of finding IRS problems too late
+          </h1>
+
+          <p id="hero-subhead" class="text-lg md:text-xl text-slate-400 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Tax Monitor Pro exists to watch transcript movement, catch meaningful changes, and surface clear next steps before silence turns into a bigger mess.
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a class="tm-btn-primary px-8 py-4 rounded-full text-lg font-semibold text-slate-950 inline-flex items-center justify-center" href="/contact.html#contact-options">Start Intake</a>
+            <a class="tm-btn-secondary px-8 py-4 rounded-full text-lg font-semibold text-white bg-transparent inline-flex items-center justify-center" href="/contact.html#contact-options">Book a Demo</a>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider-line"></div>
+
+      <!-- Mission -->
+      <section class="w-full px-6 py-20 md:py-28 bg-slate-900/40">
+        <div class="max-w-6xl mx-auto">
+          <div class="grid lg:grid-cols-2 gap-10 items-center">
+            <div class="rounded-3xl border border-white/5 bg-slate-900/50 p-8 shadow-xl">
+              <div class="flex flex-col items-center text-center">
+                <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-white/10 shadow-lg bg-gradient-to-br from-slate-700 to-slate-900">
+                  <img
+                    src="https://20896460.fs1.hubspotusercontent-na1.net/hubfs/20896460/Development%20Materials/Miscellaneous/Pic_JLW_Left-removebg-preview.png"
+                    alt="Jamie L. Williams"
+                    class="w-full h-full object-cover object-top"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <p class="mt-4 text-lg font-bold text-white">Jamie L. Williams</p>
+                <p class="mt-1 text-sm text-slate-400">Founder • Systems builder</p>
+              </div>
+              <div class="mt-8 text-center">
+                <span class="inline-flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-semibold border border-white/5">
+                  <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Built by JLW for proactive tax monitoring
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <span class="inline-flex items-center gap-2 bg-amber-500/10 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4 border border-amber-500/20">
+                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Our mission
+              </span>
+              <h2 class="text-3xl md:text-4xl font-bold text-white mb-5">Make transcript movement understandable before it becomes expensive</h2>
+              <p class="text-lg text-slate-300 leading-relaxed mb-8">Tax Monitor Pro was built for taxpayers and firms who do not want to discover IRS trouble after a notice, a delay, or a client panic spiral. We focus on proactive monitoring, human review, and practical escalation guidance so transcript updates mean something instead of just looking ominous on a screen.</p>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="rounded-2xl border border-white/5 bg-slate-900/60 p-5 shadow-md">
+                  <p class="text-3xl font-bold text-white">Proactive</p>
+                  <p class="text-sm text-slate-400">Transcript watch strategy</p>
+                </div>
+                <div class="rounded-2xl border border-white/5 bg-slate-900/60 p-5 shadow-md">
+                  <p class="text-3xl font-bold text-white">Human</p>
+                  <p class="text-sm text-slate-400">Reviewed by tax pros</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider-line"></div>
+
+      <!-- Real Voices -->
+      <section class="w-full px-6 py-20 md:py-28 bg-slate-900">
+        <div class="max-w-6xl mx-auto">
+          <div class="text-center mb-12">
+            <span class="inline-flex items-center gap-2 bg-amber-500/10 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4 border border-amber-500/20">
+              <svg class="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701z" /></svg>
+              Real voices
+            </span>
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">The pain points are already all over Reddit</h2>
+            <p class="text-lg text-slate-300 max-w-2xl mx-auto">People do not show up asking for transcript monitoring by name. They show up confused, waiting, verifying, guessing, and hoping random IRS codes magically explain themselves. So naturally, we built around that.</p>
+          </div>
+
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <a class="tm-floaty tm-card-hover block rounded-2xl border border-slate-700 bg-slate-800/90 p-6 shadow-lg hover:shadow-xl" href="https://www.reddit.com/r/IRS/comments/1r76xr4/everyones_reaction_to_seeing_no_updates_on_the/" rel="noopener noreferrer" target="_blank">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-slate-950 font-bold">R</div>
+                <div>
+                  <p class="font-semibold text-white">r/IRS</p>
+                  <p class="text-xs text-slate-400">No transcript updates</p>
+                </div>
+              </div>
+              <p class="text-slate-200 leading-relaxed mb-4">People staring at blank or unchanged transcripts are not asking for theory. They want to know whether silence means normal delay, manual review, or incoming trouble.</p>
+              <div class="mt-4 pt-4 border-t border-slate-700">
+                <p class="text-sm font-semibold text-amber-400">Why it maps to Tax Monitor Pro</p>
+                <p class="text-sm text-slate-400 mt-1">We watch for meaningful movement so clients are not left interpreting a digital shrug.</p>
+              </div>
+            </a>
+
+            <a class="tm-floaty tm-card-hover block rounded-2xl border border-slate-700 bg-slate-800/90 p-6 shadow-lg hover:shadow-xl" href="https://www.reddit.com/r/IRS/comments/1rmejlo/my_irs_identity_verification_timeline_wmr_never/" rel="noopener noreferrer" target="_blank">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">R</div>
+                <div>
+                  <p class="font-semibold text-white">r/IRS</p>
+                  <p class="text-xs text-slate-400">Identity verification limbo</p>
+                </div>
+              </div>
+              <p class="text-slate-200 leading-relaxed mb-4">Verification threads are full of people comparing timelines because the official tools rarely tell the whole story clearly enough.</p>
+              <div class="mt-4 pt-4 border-t border-slate-700">
+                <p class="text-sm font-semibold text-amber-400">Why it maps to Tax Monitor Pro</p>
+                <p class="text-sm text-slate-400 mt-1">When transcript status shifts after verification, clients need context, not folklore assembled from comment chains.</p>
+              </div>
+            </a>
+
+            <a class="tm-floaty tm-card-hover block rounded-2xl border border-slate-700 bg-slate-800/90 p-6 shadow-lg hover:shadow-xl" href="https://www.reddit.com/r/tax/comments/1physc6/why_youre_seeing_so_many_irs_delay_posts_lately/" rel="noopener noreferrer" target="_blank">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold">R</div>
+                <div>
+                  <p class="font-semibold text-white">r/tax</p>
+                  <p class="text-xs text-slate-400">Delay post explainer</p>
+                </div>
+              </div>
+              <p class="text-slate-200 leading-relaxed mb-4">One of the recurring themes: returns can sit in manual review or special handling for months with barely any visible movement.</p>
+              <div class="mt-4 pt-4 border-t border-slate-700">
+                <p class="text-sm font-semibold text-amber-400">Why it maps to Tax Monitor Pro</p>
+                <p class="text-sm text-slate-400 mt-1">Monitoring matters most when the timeline stops feeling predictable and every week of silence changes client expectations.</p>
+              </div>
+            </a>
+
+            <a class="tm-floaty tm-card-hover block rounded-2xl border border-slate-700 bg-slate-800/90 p-6 shadow-lg hover:shadow-xl" href="https://www.reddit.com/r/IRS/comments/1r7kevw/cp_0012_code_on_transcripts_any_estimate_of_how/" rel="noopener noreferrer" target="_blank">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-slate-950 font-bold">R</div>
+                <div>
+                  <p class="font-semibold text-white">r/IRS</p>
+                  <p class="text-xs text-slate-400">Transcript code confusion</p>
+                </div>
+              </div>
+              <p class="text-slate-200 leading-relaxed mb-4">A transcript code shows up, a notice has not arrived yet, and now the taxpayer is stuck trying to estimate delay, impact, and what to do next.</p>
+              <div class="mt-4 pt-4 border-t border-slate-700">
+                <p class="text-sm font-semibold text-amber-400">Why it maps to Tax Monitor Pro</p>
+                <p class="text-sm text-slate-400 mt-1">We built for the gap between transcript change and actual understanding.</p>
+              </div>
+            </a>
+
+            <a class="tm-floaty tm-card-hover block rounded-2xl border border-slate-700 bg-slate-800/90 p-6 shadow-lg hover:shadow-xl" href="https://www.reddit.com/r/IRS/comments/1r9y0x3/identity_verification_notice_disappeared_from_the/" rel="noopener noreferrer" target="_blank">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">R</div>
+                <div>
+                  <p class="font-semibold text-white">r/IRS</p>
+                  <p class="text-xs text-slate-400">Notice disappeared online</p>
+                </div>
+              </div>
+              <p class="text-slate-200 leading-relaxed mb-4">When an IRS site message disappears without explanation, people immediately assume either disaster or miracle. Neither is a strategy.</p>
+              <div class="mt-4 pt-4 border-t border-slate-700">
+                <p class="text-sm font-semibold text-amber-400">Why it maps to Tax Monitor Pro</p>
+                <p class="text-sm text-slate-400 mt-1">We help translate signal changes into measured next steps instead of panic-refresh behavior.</p>
+              </div>
+            </a>
+
+            <a class="tm-floaty tm-card-hover block rounded-2xl border border-slate-700 bg-slate-800/90 p-6 shadow-lg hover:shadow-xl" href="https://www.reddit.com/r/tax/comments/1muvy99/does_this_irs_issue_sound_logical/" rel="noopener noreferrer" target="_blank">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold">R</div>
+                <div>
+                  <p class="font-semibold text-white">r/tax</p>
+                  <p class="text-xs text-slate-400">Compare return vs transcript</p>
+                </div>
+              </div>
+              <p class="text-slate-200 leading-relaxed mb-4">A common answer in tax threads is to compare what was filed against what the IRS transcript actually reflects, because that gap is where the real story hides.</p>
+              <div class="mt-4 pt-4 border-t border-slate-700">
+                <p class="text-sm font-semibold text-amber-400">Why it maps to Tax Monitor Pro</p>
+                <p class="text-sm text-slate-400 mt-1">That is exactly the sort of signal-driven workflow proactive monitoring is meant to support.</p>
+              </div>
+            </a>
+          </div>
+
+          <div class="mt-10 text-center">
+            <div class="inline-flex items-center gap-3 bg-slate-800 px-6 py-4 rounded-2xl border border-slate-700">
+              <div class="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+              </div>
+              <p class="text-white font-semibold">We built the service around the confusion people are already living through.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider-line"></div>
+
+      <!-- CTA -->
+      <section class="w-full px-6 py-20 md:py-28">
+        <div class="max-w-4xl mx-auto text-center">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700 mb-6">
+            <svg class="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            Tax Monitor Pro • Human review
+          </div>
+          <h2 id="final-headline" class="text-3xl md:text-5xl font-bold mb-6">Ready to stop guessing at transcript changes?</h2>
+          <p id="final-subtext" class="text-lg md:text-xl text-slate-400 mb-8 max-w-2xl mx-auto">Start intake or book a demo to see how proactive transcript monitoring fits your workflow.</p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/contact.html#contact-options" class="tm-btn-primary px-10 py-4 rounded-full text-lg font-semibold text-slate-950 inline-flex items-center justify-center">Start Intake</a>
+            <a href="/contact.html#contact-options" class="tm-btn-secondary px-10 py-4 rounded-full text-lg font-semibold text-white bg-transparent inline-flex items-center justify-center">Book a Demo</a>
+          </div>
+          <p class="text-slate-500 text-sm mt-8">Proactive monitoring service • Secure intake • Contact does not create IRS representation</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- PARTIAL:footer -->
+
+  </div>
+
+  <script>
+    (function () {
+      var y = document.getElementById('footer-year');
+      if (y) y.textContent = String(new Date().getFullYear());
+    })();
+  </script>
+
+  <script>
+    const defaultConfig = {
+      final_headline: 'Ready to stop guessing at transcript changes?',
+      final_subtext: 'Start intake or book a demo to see how proactive transcript monitoring fits your workflow.',
+      hero_headline: 'Built for people tired of finding IRS problems too late',
+      hero_subhead: 'Tax Monitor Pro exists to watch transcript movement, catch meaningful changes, and surface clear next steps before silence turns into a bigger mess.',
+      trust_line: 'Proactive monitoring by licensed tax professionals — intake does not create IRS representation.',
+      font_family: 'DM Sans',
+      font_size: 16
+    };
+
+    let config = { ...defaultConfig };
+
+    async function onConfigChange(cfg) {
+      config = { ...defaultConfig, ...cfg };
+
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      };
+
+      setText('final-headline', config.final_headline || defaultConfig.final_headline);
+      setText('final-subtext', config.final_subtext || defaultConfig.final_subtext);
+      setText('hero-headline', config.hero_headline || defaultConfig.hero_headline);
+      setText('hero-subhead', config.hero_subhead || defaultConfig.hero_subhead);
+      setText('trust-line', config.trust_line || defaultConfig.trust_line);
+
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      document.body.style.fontFamily = `${fontFamily}, system-ui, sans-serif`;
+    }
+
+    function mapToCapabilities(cfg) {
+      return {
+        borderables: [],
+        fontEditable: {
+          get: () => cfg.font_family || defaultConfig.font_family,
+          set: (value) => {
+            cfg.font_family = value;
+            if (window.elementSdk) window.elementSdk.setConfig({ font_family: value });
+          }
+        },
+        fontSizeable: {
+          get: () => cfg.font_size || defaultConfig.font_size,
+          set: (value) => {
+            cfg.font_size = value;
+            if (window.elementSdk) window.elementSdk.setConfig({ font_size: value });
+          }
+        },
+        recolorables: []
+      };
+    }
+
+    function mapToEditPanelValues(cfg) {
+      return new Map([
+        ['final_headline', cfg.final_headline || defaultConfig.final_headline],
+        ['final_subtext', cfg.final_subtext || defaultConfig.final_subtext],
+        ['hero_headline', cfg.hero_headline || defaultConfig.hero_headline],
+        ['hero_subhead', cfg.hero_subhead || defaultConfig.hero_subhead],
+        ['trust_line', cfg.trust_line || defaultConfig.trust_line]
+      ]);
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    } else {
+      onConfigChange(defaultConfig);
+    }
+  </script>
+</body>
+</html>
