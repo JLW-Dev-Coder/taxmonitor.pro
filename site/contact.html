@@ -19,8 +19,25 @@
   <link rel="apple-touch-icon" href="/assets/favicon.ico">
 
   <style>
-    body { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { box-sizing: border-box; overflow-x: hidden; }
     * { font-family: 'DM Sans', sans-serif; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    main section {
+      animation: fadeInUp 0.8s ease-out both;
+    }
+
+    main section:nth-of-type(1) { animation-delay: 0.10s; }
+    main section:nth-of-type(2) { animation-delay: 0.20s; }
+    main section:nth-of-type(3) { animation-delay: 0.30s; }
+    main section:nth-of-type(4) { animation-delay: 0.40s; }
+    main section:nth-of-type(5) { animation-delay: 0.50s; }
+    main section:nth-of-type(6) { animation-delay: 0.60s; }
 
     .divider-line {
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
@@ -81,6 +98,13 @@
             Whether you have questions, want to see a demo, or are ready to take the next step—we're here to help.
           </p>
 
+          <div class="mb-10">
+            <a href="tel:+16198005457" class="block text-3xl md:text-4xl font-bold text-amber-400 text-center hover:underline">
+              (619) 800-5457
+            </a>
+            <div class="text-sm text-slate-500 text-center mt-2">M–F 9a–6p Pacific</div>
+          </div>
+
           <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <a
               class="tm-btn-primary px-8 py-4 rounded-full text-lg font-semibold text-slate-950 inline-flex items-center justify-center"
@@ -94,7 +118,7 @@
           </div>
 
           <p id="trust-line" class="text-sm text-slate-500 max-w-lg mx-auto">
-            EA-led service. Secure intake. No IRS representation created by contacting us.
+            Tax professional-led service. Secure intake. No IRS representation created by contacting us.
           </p>
 
           <div class="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
@@ -479,7 +503,7 @@
       path_headline: "Choose Your Path",
       support_card_title: "Client support",
       trust_headline: "Trust & Clarity",
-      trust_line: "EA-led service. Secure intake. No IRS representation created by contacting us.",
+      trust_line: "Tax professional-led service. Secure intake. No IRS representation created by contacting us.",
       font_family: "DM Sans",
       font_size: 16
     };
