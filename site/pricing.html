@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tax Monitor Pro — Pricing</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="/_sdk/element_sdk.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,14 +19,31 @@
   <link rel="apple-touch-icon" href="/assets/favicon.ico">
 
   <style>
-    body { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { box-sizing: border-box; overflow-x: hidden; }
     * { font-family: 'DM Sans', sans-serif; }
+
     .gradient-text {
       background: linear-gradient(135deg, #F59E0B, #D97706);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
+
+    /* Smooth page load animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    main section {
+      animation: fadeInUp 0.8s ease-out both;
+    }
+
+    main section:nth-of-type(1) { animation-delay: 0.10s; }
+    main section:nth-of-type(2) { animation-delay: 0.20s; }
+    main section:nth-of-type(3) { animation-delay: 0.30s; }
+    main section:nth-of-type(4) { animation-delay: 0.40s; }
   </style>
 
   <style>@view-transition { navigation: auto; }</style>
